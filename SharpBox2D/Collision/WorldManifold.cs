@@ -75,7 +75,7 @@ namespace SharpBox2D.Collision
 
             switch (manifold.type)
             {
-                case Manifold.ManifoldType.CIRCLES:
+                case ManifoldType.CIRCLES:
                 {
                     Vec2 pointA = pool3;
                     Vec2 pointB = pool4;
@@ -109,7 +109,7 @@ namespace SharpBox2D.Collision
                     separations[0] = (cBx - cAx)*normal.x + (cBy - cAy)*normal.y;
                 }
                     break;
-                case Manifold.ManifoldType.FACE_A:
+                case ManifoldType.FACE_A:
                     planePoint = pool3;
 
                     Rot.mulToOutUnsafe(xfA.q, manifold.localNormal, ref normal);
@@ -149,7 +149,7 @@ namespace SharpBox2D.Collision
 
                     }
                     break;
-                case Manifold.ManifoldType.FACE_B:
+                case ManifoldType.FACE_B:
                     planePoint = pool3;
                     Rot.mulToOutUnsafe(xfB.q, manifold.localNormal, ref normal);
                     Transform.mulToOut(xfB, manifold.localPoint, ref planePoint);

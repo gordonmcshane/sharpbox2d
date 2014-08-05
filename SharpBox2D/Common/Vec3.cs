@@ -34,8 +34,6 @@ namespace SharpBox2D.Common
 
     public struct Vec3 : IEquatable<Vec3>
     {
-        private static readonly long serialVersionUID = 1L;
-
         public float x, y, z;
 
         public Vec3(float argX, float argY, float argZ)

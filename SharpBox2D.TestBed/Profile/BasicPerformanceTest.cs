@@ -143,24 +143,27 @@ namespace SharpBox2D.TestBed.Profile
             }
         }
 
-        public void setupTest(int testNum) {}
+        public virtual void setupTest(int testNum) {}
 
-        public void preStep(int testNum) {}
+        public virtual void preStep(int testNum) { }
 
         public abstract void step(int testNum);
 
         public abstract string getTestName(int testNum);
 
-        public int getFrames(int testNum) {
+        public virtual int getFrames(int testNum)
+        {
             return 0;
         }
 
         // override to change output
-        public void println(string s) {
+        public virtual void println(string s)
+        {
             Console.WriteLine(s);
         }
 
-        public void printf(string s, params object[] args) {
+        public virtual void printf(string s, params object[] args)
+        {
             Console.WriteLine(String.Format(s, args));
         }
     }

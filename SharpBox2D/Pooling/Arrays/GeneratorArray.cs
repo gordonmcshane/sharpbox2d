@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using SharpBox2D.Particle;
 
 namespace SharpBox2D.Pooling.Arrays
 {

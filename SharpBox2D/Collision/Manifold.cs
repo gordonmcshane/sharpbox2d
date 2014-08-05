@@ -51,14 +51,6 @@ namespace SharpBox2D.Collision
 
     public class Manifold
     {
-
-        public enum ManifoldType
-        {
-            CIRCLES,
-            FACE_A,
-            FACE_B
-        }
-
         /** The points of contact. */
         public ManifoldPoint[] points;
 
@@ -127,5 +119,12 @@ namespace SharpBox2D.Collision
             localPoint.set(cp.localPoint);
             pointCount = cp.pointCount;
         }
+    }
+
+    public enum ManifoldType
+    {
+        CIRCLES,
+        FACE_A,
+        FACE_B
     }
 }

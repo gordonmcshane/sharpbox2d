@@ -37,8 +37,6 @@ namespace SharpBox2D.Common
 
     public struct Transform : IEquatable<Transform>
     {
-        private static readonly long serialVersionUID = 1L;
-
         /** The translation caused by the transform */
         public Vec2 p;
 

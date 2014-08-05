@@ -34,6 +34,7 @@ using SharpBox2D.Dynamics.Joints;
 using SharpBox2D.Particle;
 using SharpBox2D.Pooling;
 using SharpBox2D.Pooling.Arrays;
+using SharpBox2D.Pooling.Normal;
 
 namespace SharpBox2D.Dynamics
 {
@@ -282,7 +283,7 @@ namespace SharpBox2D.Dynamics
             creator.push(contact);
         }
 
-        public IWorldPool getPool()
+        internal IWorldPool getPool()
         {
             return pool;
         }
@@ -746,10 +747,10 @@ namespace SharpBox2D.Dynamics
             }
 
 
-            int flags = m_debugDraw.getFlags();
-            bool wireframe = (flags & DebugDraw.e_wireframeDrawingBit) != 0;
+            DebugDrawFlags flags = m_debugDraw.getFlags();
+            bool wireframe = (flags & DebugDrawFlags.Wireframe) != 0;
 
-            if ((flags & DebugDraw.e_shapeBit) != 0)
+            if ((flags & DebugDrawFlags.Shapes) != 0)
             {
                 for (Body b = m_bodyList; b != null; b = b.getNext())
                 {
@@ -786,7 +787,7 @@ namespace SharpBox2D.Dynamics
                 drawParticleSystem(m_particleSystem);
             }
 
-            if ((flags & DebugDraw.e_jointBit) != 0)
+            if ((flags & DebugDrawFlags.Joints) != 0)
             {
                 for (Joint j = m_jointList; j != null; j = j.getNext())
                 {
@@ -794,7 +795,7 @@ namespace SharpBox2D.Dynamics
                 }
             }
 
-            if ((flags & DebugDraw.e_pairBit) != 0)
+            if ((flags & DebugDrawFlags.Pairs) != 0)
             {
                 color.set(0.3f, 0.9f, 0.9f);
                 for (Contact c = m_contactManager.m_contactList; c != null; c = c.getNext())
@@ -807,7 +808,7 @@ namespace SharpBox2D.Dynamics
                 }
             }
 
-            if ((flags & DebugDraw.e_aabbBit) != 0)
+            if ((flags & DebugDrawFlags.AABB) != 0)
             {
                 color.set(0.9f, 0.3f, 0.9f);
 
@@ -838,7 +839,7 @@ namespace SharpBox2D.Dynamics
                 }
             }
 
-            if ((flags & DebugDraw.e_centerOfMassBit) != 0)
+            if ((flags & DebugDrawFlags.CenterOfMass) != 0)
             {
                 for (Body b = m_bodyList; b != null; b = b.getNext())
                 {
@@ -848,7 +849,7 @@ namespace SharpBox2D.Dynamics
                 }
             }
 
-            if ((flags & DebugDraw.e_dynamicTreeBit) != 0)
+            if ((flags & DebugDrawFlags.DynamicTree) != 0)
             {
                 m_contactManager.m_broadPhase.drawTree(m_debugDraw);
             }
@@ -1879,7 +1880,7 @@ namespace SharpBox2D.Dynamics
 
         private void drawParticleSystem(ParticleSystem system)
         {
-            bool wireframe = (m_debugDraw.getFlags() & DebugDraw.e_wireframeDrawingBit) != 0;
+            bool wireframe = (m_debugDraw.getFlags() & DebugDrawFlags.Wireframe) != 0;
             int particleCount = system.getParticleCount();
             if (particleCount != 0)
             {

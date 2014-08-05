@@ -22,11 +22,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-
 /**
  * Functions used for computing contact points, distance queries, and TOI queries. Collision methods
  * are non-static for pooling speed, retrieve a collision object from the {@link SingletonPool}.
- * Should not be ructed.
+ * Should not be constructed.
  * 
  * @author Daniel Murphy
  */
@@ -60,14 +59,14 @@ namespace SharpBox2D.Collision
         private DistanceOutput output = new DistanceOutput();
 
         /**
-   * Determine if two generic shapes overlap.
-   * 
-   * @param shapeA
-   * @param shapeB
-   * @param xfA
-   * @param xfB
-   * @return
-   */
+        * Determine if two generic shapes overlap.
+        * 
+        * @param shapeA
+        * @param shapeB
+        * @param xfA
+        * @param xfB
+        * @return
+        */
 
         public bool testOverlap(Shape shapeA, int indexA, Shape shapeB, int indexB,
             Transform xfA, Transform xfB)
@@ -86,15 +85,15 @@ namespace SharpBox2D.Collision
         }
 
         /**
-   * Compute the point states given two manifolds. The states pertain to the transition from
-   * manifold1 to manifold2. So state1 is either persist or remove while state2 is either add or
-   * persist.
-   * 
-   * @param state1
-   * @param state2
-   * @param manifold1
-   * @param manifold2
-   */
+        * Compute the point states given two manifolds. The states pertain to the transition from
+        * manifold1 to manifold2. So state1 is either persist or remove while state2 is either add or
+        * persist.
+        * 
+        * @param state1
+        * @param state2
+        * @param manifold1
+        * @param manifold2
+        */
 
         public static void getPointStates(PointState[] state1, PointState[] state2,
             Manifold manifold1, Manifold manifold2)
@@ -142,14 +141,14 @@ namespace SharpBox2D.Collision
         }
 
         /**
-   * Clipping for contact manifolds. Sutherland-Hodgman clipping.
-   * 
-   * @param vOut
-   * @param vIn
-   * @param normal
-   * @param offset
-   * @return
-   */
+        * Clipping for contact manifolds. Sutherland-Hodgman clipping.
+        * 
+        * @param vOut
+        * @param vIn
+        * @param normal
+        * @param offset
+        * @return
+        */
 
         public static int clipSegmentToLine(ClipVertex[] vOut, ClipVertex[] vIn,
             Vec2 normal, float offset, int vertexIndexA)
@@ -204,14 +203,14 @@ namespace SharpBox2D.Collision
         private static Vec2 d = new Vec2();
 
         /**
-   * Compute the collision manifold between two circles.
-   * 
-   * @param manifold
-   * @param circle1
-   * @param xfA
-   * @param circle2
-   * @param xfB
-   */
+        * Compute the collision manifold between two circles.
+        * 
+        * @param manifold
+        * @param circle1
+        * @param xfA
+        * @param circle2
+        * @param xfB
+        */
 
         public void collideCircles(Manifold manifold, CircleShape circle1,
             Transform xfA, CircleShape circle2, Transform xfB)
@@ -241,7 +240,7 @@ namespace SharpBox2D.Collision
                 return;
             }
 
-            manifold.type = Manifold.ManifoldType.CIRCLES;
+            manifold.type = ManifoldType.CIRCLES;
             manifold.localPoint.set(circle1p);
             manifold.localNormal.setZero();
             manifold.pointCount = 1;
@@ -253,14 +252,14 @@ namespace SharpBox2D.Collision
         // djm pooling, and from above
 
         /**
-   * Compute the collision manifold between a polygon and a circle.
-   * 
-   * @param manifold
-   * @param polygon
-   * @param xfA
-   * @param circle
-   * @param xfB
-   */
+        * Compute the collision manifold between a polygon and a circle.
+        * 
+        * @param manifold
+        * @param polygon
+        * @param xfA
+        * @param circle
+        * @param xfB
+        */
 
         public void collidePolygonAndCircle(Manifold manifold, PolygonShape polygon,
             Transform xfA, CircleShape circle, Transform xfB)
@@ -330,7 +329,7 @@ namespace SharpBox2D.Collision
             if (separation < Settings.EPSILON)
             {
                 manifold.pointCount = 1;
-                manifold.type = Manifold.ManifoldType.FACE_A;
+                manifold.type = ManifoldType.FACE_A;
 
                 // before inline:
                 // manifold.localNormal.set(normals[normalIndex]);
@@ -384,7 +383,7 @@ namespace SharpBox2D.Collision
                 }
 
                 manifold.pointCount = 1;
-                manifold.type = Manifold.ManifoldType.FACE_A;
+                manifold.type = ManifoldType.FACE_A;
                 // before inline:
                 // manifold.localNormal.set(cLocal).subLocal(v1);
                 // after inline:
@@ -407,7 +406,7 @@ namespace SharpBox2D.Collision
                 }
 
                 manifold.pointCount = 1;
-                manifold.type = Manifold.ManifoldType.FACE_A;
+                manifold.type = ManifoldType.FACE_A;
                 // before inline:
                 // manifold.localNormal.set(cLocal).subLocal(v2);
                 // after inline:
@@ -446,7 +445,7 @@ namespace SharpBox2D.Collision
                 // end inline
 
                 manifold.pointCount = 1;
-                manifold.type = Manifold.ManifoldType.FACE_A;
+                manifold.type = ManifoldType.FACE_A;
                 manifold.localNormal.set(normals[vertIndex1]);
                 manifold.localPoint.x = fcx; // (faceCenter)
                 manifold.localPoint.y = fcy;
@@ -456,21 +455,21 @@ namespace SharpBox2D.Collision
         }
 
         // djm pooling, and from above
-        private Vec2 temp = new Vec2();
-        private Transform xf = new Transform();
-        private Vec2 n = new Vec2();
-        private Vec2 v1 = new Vec2();
+        private Vec2 temp;
+        private Transform xf;
+        private Vec2 n;
+        private Vec2 v1;
 
         /**
-   * Find the max separation between poly1 and poly2 using edge normals from poly1.
-   * 
-   * @param edgeIndex
-   * @param poly1
-   * @param xf1
-   * @param poly2
-   * @param xf2
-   * @return
-   */
+        * Find the max separation between poly1 and poly2 using edge normals from poly1.
+        * 
+        * @param edgeIndex
+        * @param poly1
+        * @param xf1
+        * @param poly2
+        * @param xf2
+        * @return
+        */
 
         public void findMaxSeparation(EdgeResults results, PolygonShape poly1,
             Transform xf1, PolygonShape poly2, Transform xf2)
@@ -600,14 +599,14 @@ namespace SharpBox2D.Collision
         private ClipVertex[] clipPoints2 = new ClipVertex[2];
 
         /**
-   * Compute the collision manifold between two polygons.
-   * 
-   * @param manifold
-   * @param polygon1
-   * @param xf1
-   * @param polygon2
-   * @param xf2
-   */
+        * Compute the collision manifold between two polygons.
+        * 
+        * @param manifold
+        * @param polygon1
+        * @param xf1
+        * @param polygon2
+        * @param xf2
+        */
 
         public void collidePolygons(Manifold manifold, PolygonShape polyA,
             Transform xfA, PolygonShape polyB, Transform xfB)
@@ -649,7 +648,7 @@ namespace SharpBox2D.Collision
                 xf1 = xfB;
                 xf2 = xfA;
                 edge1 = results2.edgeIndex;
-                manifold.type = Manifold.ManifoldType.FACE_B;
+                manifold.type = ManifoldType.FACE_B;
                 flip = true;
             }
             else
@@ -659,7 +658,7 @@ namespace SharpBox2D.Collision
                 xf1 = xfA;
                 xf2 = xfB;
                 edge1 = results1.edgeIndex;
-                manifold.type = Manifold.ManifoldType.FACE_A;
+                manifold.type = ManifoldType.FACE_A;
                 flip = false;
             }
             Rot xf1q = xf1.q;
@@ -701,11 +700,13 @@ namespace SharpBox2D.Collision
 
             // Face offset
             // float frontOffset = Vec2.dot(normal, v11);
+            // inlined
             float frontOffset = normalx*v11.x + normaly*v11.y;
 
             // Side offsets, extended by polytope skin thickness.
             // float sideOffset1 = -Vec2.dot(tangent, v11) + totalRadius;
             // float sideOffset2 = Vec2.dot(tangent, v12) + totalRadius;
+            // inlined
             float sideOffset1 = -(tangent.x*v11.x + tangent.y*v11.y) + totalRadius;
             float sideOffset2 = tangent.x*v12.x + tangent.y*v12.y + totalRadius;
 
@@ -741,24 +742,33 @@ namespace SharpBox2D.Collision
             for (int i = 0; i < Settings.maxManifoldPoints; ++i)
             {
                 // float separation = Vec2.dot(normal, clipPoints2[i].v) - frontOffset;
+                // inlined
                 float separation = normalx*clipPoints2[i].v.x + normaly*clipPoints2[i].v.y - frontOffset;
 
                 if (separation <= totalRadius)
                 {
                     ManifoldPoint cp = manifold.points[pointCount];
+
                     // cp.m_localPoint = MulT(xf2, clipPoints2[i].v);
-                    Vec2 @ref = cp.localPoint;
+                    // inlined
+
+                    Vec2 localPoint = cp.localPoint;
+
                     float px = clipPoints2[i].v.x - xf2.p.x;
                     float py = clipPoints2[i].v.y - xf2.p.y;
-                    @ref.x = (xf2.q.c*px + xf2.q.s*py);
-                    @ref.y = (-xf2.q.s*px + xf2.q.c*py);
-                    cp.localPoint = @ref;
+                    
+                    localPoint.x = (xf2.q.c*px + xf2.q.s*py);
+                    localPoint.y = (-xf2.q.s*px + xf2.q.c*py);
+                    
+                    cp.localPoint = localPoint;
                     cp.id.set(clipPoints2[i].id);
+                    
                     if (flip)
                     {
                         // Swap features
                         cp.id.flip();
                     }
+
                     ++pointCount;
                 }
             }
@@ -766,11 +776,10 @@ namespace SharpBox2D.Collision
             manifold.pointCount = pointCount;
         }
 
-        private Vec2 Q = new Vec2();
-        private Vec2 e = new Vec2();
+        private Vec2 Q;
+        private Vec2 e;
         private ContactID cf = new ContactID();
-        private Vec2 e1 = new Vec2();
-        private Vec2 P = new Vec2();
+        private Vec2 e1;        
 
         // Compute contact points for edge versus circle.
         // This accounts for edge connectivity.
@@ -831,7 +840,7 @@ namespace SharpBox2D.Collision
                 cf.indexA = 0;
                 cf.typeA = (byte) ContactID.Type.VERTEX;
                 manifold.pointCount = 1;
-                manifold.type = Manifold.ManifoldType.CIRCLES;
+                manifold.type = ManifoldType.CIRCLES;
                 manifold.localNormal.setZero();
                 manifold.localPoint.set(P);
                 // manifold.points[0].id.key = 0;
@@ -870,7 +879,7 @@ namespace SharpBox2D.Collision
                 cf.indexA = 1;
                 cf.typeA = (byte) ContactID.Type.VERTEX;
                 manifold.pointCount = 1;
-                manifold.type = Manifold.ManifoldType.CIRCLES;
+                manifold.type = ManifoldType.CIRCLES;
                 manifold.localNormal.setZero();
                 manifold.localPoint.set(P);
                 // manifold.points[0].id.key = 0;
@@ -905,7 +914,7 @@ namespace SharpBox2D.Collision
             cf.indexA = 0;
             cf.typeA = (byte) ContactID.Type.FACE;
             manifold.pointCount = 1;
-            manifold.type = Manifold.ManifoldType.FACE_A;
+            manifold.type = ManifoldType.FACE_A;
             manifold.localNormal.set(n);
             manifold.localPoint.set(A);
             // manifold.points[0].id.key = 0;
@@ -921,11 +930,9 @@ namespace SharpBox2D.Collision
             collider.collide(manifold, edgeA, xfA, polygonB, xfB);
         }
 
-
-
         /**
-   * Java-specific class for returning edge results
-   */
+        * Java-specific class for returning edge results
+        */
 
         public class EdgeResults
         {
@@ -934,8 +941,8 @@ namespace SharpBox2D.Collision
         }
 
         /**
-   * Used for computing contact manifolds.
-   */
+        * Used for computing contact manifolds.
+        */
 
         public class ClipVertex
         {
@@ -962,117 +969,92 @@ namespace SharpBox2D.Collision
         }
 
         /**
-   * This is used for determining the state of contact points.
-   * 
-   * @author Daniel Murphy
-   */
+        * This is used for determining the state of contact points.
+        * 
+        * @author Daniel Murphy
+        */
 
         public enum PointState
         {
             /**
-     * point does not exist
-     */
+            * point does not exist
+            */
             NULL_STATE,
             /**
-     * point was added in the update
-     */
+            * point was added in the update
+            */
             ADD_STATE,
             /**
-     * point persisted across the update
-     */
+            * point persisted across the update
+            */
             PERSIST_STATE,
             /**
-     * point was removed in the update
-     */
+            * point was removed in the update
+            */
             REMOVE_STATE
         }
 
         /**
-   * This structure is used to keep track of the best separating axis.
-   */
+        * This structure is used to keep track of the best separating axis.
+        */
 
         private class EPAxis
         {
-            public enum Type
-            {
-                UNKNOWN,
-                EDGE_A,
-                EDGE_B
-            }
-
-            public Type type;
+            public EPAxisType type;
             internal int index;
             internal float separation;
         }
 
         /**
-   * This holds polygon B expressed in frame A.
-   */
+        * This holds polygon B expressed in frame A.
+        */
 
         private class TempPolygon
         {
             internal Vec2[] vertices = new Vec2[Settings.maxPolygonVertices];
             internal Vec2[] normals = new Vec2[Settings.maxPolygonVertices];
             internal int count;
-
-            public TempPolygon()
-            {
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    vertices[i] = new Vec2();
-                    normals[i] = new Vec2();
-                }
-            }
         }
 
         /**
-   * Reference face used for clipping
-   */
+        * Reference face used for clipping
+        */
 
         private class ReferenceFace
         {
             internal int i1, i2;
-            internal Vec2 v1 = new Vec2();
-            internal Vec2 v2 = new Vec2();
-            internal Vec2 normal = new Vec2();
+            internal Vec2 v1;
+            internal Vec2 v2;
+            internal Vec2 normal;
 
-            internal Vec2 sideNormal1 = new Vec2();
+            internal Vec2 sideNormal1;
             internal float sideOffset1;
 
-            internal Vec2 sideNormal2 = new Vec2();
+            internal Vec2 sideNormal2;
             internal float sideOffset2;
         }
 
         /**
-   * This class collides and edge and a polygon, taking into account edge adjacency.
-   */
+        * This class collides and edge and a polygon, taking into account edge adjacency.
+        */
 
         private class EPCollider
         {
-            public enum VertexType
-            {
-                ISOLATED,
-                CONCAVE,
-                CONVEX
-            }
-
             private TempPolygon m_polygonB = new TempPolygon();
 
-            private Transform m_xf = new Transform();
-            private Vec2 m_centroidB = new Vec2();
-            private Vec2 m_v0 = new Vec2();
-            private Vec2 m_v1 = new Vec2();
-            private Vec2 m_v2 = new Vec2();
-            private Vec2 m_v3 = new Vec2();
-            private Vec2 m_normal0 = new Vec2();
-            private Vec2 m_normal1 = new Vec2();
-            private Vec2 m_normal2 = new Vec2();
-            private Vec2 m_normal = new Vec2();
+            private Transform m_xf;
+            private Vec2 m_centroidB;
+            private Vec2 m_v0;
+            private Vec2 m_v1;
+            private Vec2 m_v2;
+            private Vec2 m_v3;
+            private Vec2 m_normal0;
+            private Vec2 m_normal1;
+            private Vec2 m_normal2;
+            private Vec2 m_normal;
 
-            private VertexType m_type1, m_type2;
-
-            private Vec2 m_lowerLimit = new Vec2();
-            private Vec2 m_upperLimit = new Vec2();
+            private Vec2 m_lowerLimit;
+            private Vec2 m_upperLimit;
             private float m_radius;
             private bool m_front;
 
@@ -1086,10 +1068,10 @@ namespace SharpBox2D.Collision
                 }
             }
 
-            private Vec2 edge1 = new Vec2();
-            private Vec2 temp = new Vec2();
-            private Vec2 edge0 = new Vec2();
-            private Vec2 edge2 = new Vec2();
+            private Vec2 edge1;
+            private Vec2 temp;
+            private Vec2 edge0;
+            private Vec2 edge2;
             private ClipVertex[] ie = new ClipVertex[2];
             private ClipVertex[] clipPoints1 = new ClipVertex[2];
             private ClipVertex[] clipPoints2 = new ClipVertex[2];
@@ -1363,7 +1345,7 @@ namespace SharpBox2D.Collision
                 computeEdgeSeparation(edgeAxis);
 
                 // If no valid normal can be found than this edge should not collide.
-                if (edgeAxis.type == EPAxis.Type.UNKNOWN)
+                if (edgeAxis.type == EPAxisType.UNKNOWN)
                 {
                     return;
                 }
@@ -1374,7 +1356,7 @@ namespace SharpBox2D.Collision
                 }
 
                 computePolygonSeparation(polygonAxis);
-                if (polygonAxis.type != EPAxis.Type.UNKNOWN && polygonAxis.separation > m_radius)
+                if (polygonAxis.type != EPAxisType.UNKNOWN && polygonAxis.separation > m_radius)
                 {
                     return;
                 }
@@ -1384,7 +1366,7 @@ namespace SharpBox2D.Collision
                 float k_absoluteTol = 0.001f;
 
                 EPAxis primaryAxis;
-                if (polygonAxis.type == EPAxis.Type.UNKNOWN)
+                if (polygonAxis.type == EPAxisType.UNKNOWN)
                 {
                     primaryAxis = edgeAxis;
                 }
@@ -1400,9 +1382,9 @@ namespace SharpBox2D.Collision
                 ClipVertex ie0 = ie[0];
                 ClipVertex ie1 = ie[1];
 
-                if (primaryAxis.type == EPAxis.Type.EDGE_A)
+                if (primaryAxis.type == EPAxisType.EDGE_A)
                 {
-                    manifold.type = Manifold.ManifoldType.FACE_A;
+                    manifold.type = ManifoldType.FACE_A;
 
                     // Search for the polygon normal that is most anti-parallel to the edge normal.
                     int bestIndex = 0;
@@ -1423,14 +1405,14 @@ namespace SharpBox2D.Collision
                     ie0.v.set(m_polygonB.vertices[i1]);
                     ie0.id.indexA = 0;
                     ie0.id.indexB = (byte) i1;
-                    ie0.id.typeA = (byte) ContactID.Type.FACE;
-                    ie0.id.typeB = (byte) ContactID.Type.VERTEX;
+                    ie0.id.typeA  = (byte) ContactID.Type.FACE;
+                    ie0.id.typeB  = (byte) ContactID.Type.VERTEX;
 
                     ie1.v.set(m_polygonB.vertices[i2]);
                     ie1.id.indexA = 0;
                     ie1.id.indexB = (byte) i2;
-                    ie1.id.typeA = (byte) ContactID.Type.FACE;
-                    ie1.id.typeB = (byte) ContactID.Type.VERTEX;
+                    ie1.id.typeA  = (byte) ContactID.Type.FACE;
+                    ie1.id.typeB  = (byte) ContactID.Type.VERTEX;
 
                     if (m_front)
                     {
@@ -1451,19 +1433,19 @@ namespace SharpBox2D.Collision
                 }
                 else
                 {
-                    manifold.type = Manifold.ManifoldType.FACE_B;
+                    manifold.type = ManifoldType.FACE_B;
 
                     ie0.v.set(m_v1);
-                    ie0.id.indexA = 0;
-                    ie0.id.indexB = (byte) primaryAxis.index;
-                    ie0.id.typeA = (byte) ContactID.Type.VERTEX;
-                    ie0.id.typeB = (byte) ContactID.Type.FACE;
+                    ie0.id.indexA =  0;
+                    ie0.id.indexB =  (byte) primaryAxis.index;
+                    ie0.id.typeA  =  (byte) ContactID.Type.VERTEX;
+                    ie0.id.typeB  =  (byte) ContactID.Type.FACE;
 
                     ie1.v.set(m_v2);
-                    ie1.id.indexA = 0;
-                    ie1.id.indexB = (byte) primaryAxis.index;
-                    ie1.id.typeA = (byte) ContactID.Type.VERTEX;
-                    ie1.id.typeB = (byte) ContactID.Type.FACE;
+                    ie1.id.indexA =  0;
+                    ie1.id.indexB =  (byte) primaryAxis.index;
+                    ie1.id.typeA  =  (byte) ContactID.Type.VERTEX;
+                    ie1.id.typeB  =  (byte) ContactID.Type.FACE;
 
                     rf.i1 = primaryAxis.index;
                     rf.i2 = rf.i1 + 1 < m_polygonB.count ? rf.i1 + 1 : 0;
@@ -1497,7 +1479,7 @@ namespace SharpBox2D.Collision
                 }
 
                 // Now clipPoints2 contains the clipped points.
-                if (primaryAxis.type == EPAxis.Type.EDGE_A)
+                if (primaryAxis.type == EPAxisType.EDGE_A)
                 {
                     manifold.localNormal.set(rf.normal);
                     manifold.localPoint.set(rf.v1);
@@ -1519,7 +1501,7 @@ namespace SharpBox2D.Collision
                     {
                         ManifoldPoint cp = manifold.points[pointCount];
 
-                        if (primaryAxis.type == EPAxis.Type.EDGE_A)
+                        if (primaryAxis.type == EPAxisType.EDGE_A)
                         {
                             // cp.localPoint = MulT(m_xf, clipPoints2[i].v);
                             Transform.mulTransToOutUnsafe(m_xf, clipPoints2[i].v, ref cp.localPoint);
@@ -1542,9 +1524,9 @@ namespace SharpBox2D.Collision
             }
 
 
-            public void computeEdgeSeparation(EPAxis axis)
+            private void computeEdgeSeparation(EPAxis axis)
             {
-                axis.type = EPAxis.Type.EDGE_A;
+                axis.type = EPAxisType.EDGE_A;
                 axis.index = m_front ? 0 : 1;
                 axis.separation = float.MaxValue;
                 float nx = m_normal.x;
@@ -1563,12 +1545,12 @@ namespace SharpBox2D.Collision
                 }
             }
 
-            private Vec2 perp = new Vec2();
-            private Vec2 n = new Vec2();
+            private Vec2 perp;
+            private Vec2 n;
 
-            public void computePolygonSeparation(EPAxis axis)
+            private void computePolygonSeparation(EPAxis axis)
             {
-                axis.type = EPAxis.Type.UNKNOWN;
+                axis.type = EPAxisType.UNKNOWN;
                 axis.index = -1;
                 axis.separation = -float.MaxValue;
 
@@ -1595,7 +1577,7 @@ namespace SharpBox2D.Collision
                     if (s > m_radius)
                     {
                         // No collision
-                        axis.type = EPAxis.Type.EDGE_B;
+                        axis.type = EPAxisType.EDGE_B;
                         axis.index = i;
                         axis.separation = s;
                         return;
@@ -1619,12 +1601,26 @@ namespace SharpBox2D.Collision
 
                     if (s > axis.separation)
                     {
-                        axis.type = EPAxis.Type.EDGE_B;
+                        axis.type = EPAxisType.EDGE_B;
                         axis.index = i;
                         axis.separation = s;
                     }
                 }
             }
+        }
+
+        public enum EPVertexType
+        {
+            ISOLATED,
+            CONCAVE,
+            CONVEX
+        }
+
+        public enum EPAxisType
+        {
+            UNKNOWN,
+            EDGE_A,
+            EDGE_B
         }
     }
 }

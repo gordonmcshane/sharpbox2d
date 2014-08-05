@@ -162,7 +162,7 @@ namespace SharpBox2D.Collision.Broadphase
             for (i = 0; i < m_moveCount; ++i)
             {
                 m_queryProxyId = m_moveBuffer[i];
-                if (m_queryProxyId == (int) BroadPhaseProxy.Null)
+                if (m_queryProxyId == (int)BroadPhaseProxy.Null)
                 {
                     continue;
                 }

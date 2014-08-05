@@ -35,8 +35,6 @@ namespace SharpBox2D.Common
 
     public struct Mat33
     {
-        private static readonly long serialVersionUID = 2L;
-
         public static readonly Mat33 IDENTITY = new Mat33(new Vec3(1, 0, 0), new Vec3(0, 1, 0), new Vec3(0,
             0, 1));
 

@@ -25,6 +25,7 @@
  * Created at 4:35:29 AM Jul 15, 2010
  */
 
+using System;
 using SharpBox2D.Common;
 using SharpBox2D.Particle;
 
@@ -37,27 +38,22 @@ namespace SharpBox2D.Callbacks
  * 
  * @author Daniel Murphy
  */
+    [Flags]
+    public enum DebugDrawFlags
+    {
+        None = 0,
+        Shapes = 1 << 1,
+        Joints = 1 << 2,
+        AABB = 1 << 3,
+        Pairs = 1 << 4,
+        CenterOfMass = 1 << 5,
+        DynamicTree = 1 << 6,
+        Wireframe = 1 << 7
+    }   
 
     public abstract class DebugDraw
     {
-
-        /** Draw shapes */
-        public static int e_shapeBit = 1 << 1;
-        /** Draw joint connections */
-        public static int e_jointBit = 1 << 2;
-        /** Draw axis aligned bounding boxes */
-        public static int e_aabbBit = 1 << 3;
-        /** Draw pairs of connected objects */
-        public static int e_pairBit = 1 << 4;
-        /** Draw center of mass frame */
-        public static int e_centerOfMassBit = 1 << 5;
-        /** Draw dynamic tree */
-        public static int e_dynamicTreeBit = 1 << 6;
-        /** Draw only the wireframe for drawing performance */
-        public static int e_wireframeDrawingBit = 1 << 7;
-
-
-        protected int m_drawFlags;
+        protected DebugDrawFlags m_drawFlags;
         protected IViewportTransform viewportTransform;
 
         protected DebugDraw() : this(null)
@@ -66,7 +62,7 @@ namespace SharpBox2D.Callbacks
 
         protected DebugDraw(IViewportTransform viewport)
         {
-            m_drawFlags = 0;
+            m_drawFlags = DebugDrawFlags.None;
             viewportTransform = viewport;
         }
 
@@ -75,22 +71,22 @@ namespace SharpBox2D.Callbacks
             this.viewportTransform = viewportTransform;
         }
 
-        public void setFlags(int flags)
+        public void setFlags(DebugDrawFlags flags)
         {
             m_drawFlags = flags;
         }
 
-        public int getFlags()
+        public DebugDrawFlags getFlags()
         {
             return m_drawFlags;
         }
 
-        public void appendFlags(int flags)
+        public void appendFlags(DebugDrawFlags flags)
         {
             m_drawFlags |= flags;
         }
 
-        public void clearFlags(int flags)
+        public void clearFlags(DebugDrawFlags flags)
         {
             m_drawFlags &= ~flags;
         }

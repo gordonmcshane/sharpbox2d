@@ -36,8 +36,6 @@ namespace SharpBox2D.Common
 
     public class Sweep
     {
-        private static long serialVersionUID = 1L;
-
         /** Local center of mass position */
         public Vec2 localCenter;
         /** Center world positions */

@@ -1,8 +1,10 @@
+using System;
 using SharpBox2D.Callbacks;
 using SharpBox2D.Common;
 
 namespace SharpBox2D.Collision.Broadphase
 {
+    [Flags]
     public enum BroadPhaseProxy : int
     {
         Null = -1

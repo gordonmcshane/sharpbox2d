@@ -1065,7 +1065,7 @@ namespace SharpBox2D.Dynamics.Contacts
             Vec2 pcLocalPointsI = pc.localPoints[index];
             switch (pc.type)
             {
-                case Manifold.ManifoldType.CIRCLES:
+                case ManifoldType.CIRCLES:
                 {
                     // Transform.mulToOutUnsafe(xfA, pc.localPoint, pointA);
                     // Transform.mulToOutUnsafe(xfB, pc.localPoints[0], pointB);
@@ -1093,7 +1093,7 @@ namespace SharpBox2D.Dynamics.Contacts
                     break;
                 }
 
-                case Manifold.ManifoldType.FACE_A:
+                case ManifoldType.FACE_A:
                 {
                     // Rot.mulToOutUnsafe(xfAq, pc.localNormal, normal);
                     // Transform.mulToOutUnsafe(xfA, pc.localPoint, planePoint);
@@ -1119,7 +1119,7 @@ namespace SharpBox2D.Dynamics.Contacts
                     break;
                 }
 
-                case Manifold.ManifoldType.FACE_B:
+                case ManifoldType.FACE_B:
                 {
                     // Rot.mulToOutUnsafe(xfBq, pc.localNormal, normal);
                     // Transform.mulToOutUnsafe(xfB, pc.localPoint, planePoint);

@@ -24,6 +24,7 @@
 
 using SharpBox2D.Common;
 using SharpBox2D.Pooling;
+using SharpBox2D.Pooling.Normal;
 
 namespace SharpBox2D.Collision
 {

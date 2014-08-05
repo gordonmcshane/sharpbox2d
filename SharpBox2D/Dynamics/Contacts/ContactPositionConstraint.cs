@@ -38,7 +38,7 @@ namespace SharpBox2D.Dynamics.Contacts
         internal Vec2 localCenterA = new Vec2();
         internal Vec2 localCenterB = new Vec2();
         internal float invIA, invIB;
-        internal Manifold.ManifoldType type;
+        internal ManifoldType type;
         internal float radiusA, radiusB;
         internal int pointCount;
 

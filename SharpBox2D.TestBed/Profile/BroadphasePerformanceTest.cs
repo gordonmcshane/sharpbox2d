@@ -2,6 +2,7 @@ using SharpBox2D.Collision.Broadphase;
 using SharpBox2D.Common;
 using SharpBox2D.Dynamics;
 using SharpBox2D.Pooling;
+using SharpBox2D.Pooling.Normal;
 using SharpBox2D.TestBed.Profile.Worlds;
 
 namespace SharpBox2D.TestBed.Profile
@@ -22,7 +23,7 @@ namespace SharpBox2D.TestBed.Profile
             benchmark.go();
         }
 
-        public void setupTest(int testNum) {
+        public override void setupTest(int testNum) {
             World w;
             IWorldPool pool = new DefaultWorldPool(50, 50);
             if (testNum == 0) {
@@ -32,7 +33,6 @@ namespace SharpBox2D.TestBed.Profile
             }
             world.setupWorld(w);
         }
-
   
         public override void step(int testNum) {
             world.step();

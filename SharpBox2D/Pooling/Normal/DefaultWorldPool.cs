@@ -31,9 +31,8 @@ using System.Diagnostics;
 using SharpBox2D.Collision;
 using SharpBox2D.Common;
 using SharpBox2D.Dynamics.Contacts;
-using SharpBox2D.Pooling.Normal;
 
-namespace SharpBox2D.Pooling
+namespace SharpBox2D.Pooling.Normal
 {
 /**
  * Provides object pooling for all objects used in the engine. Objects retrieved from here should
@@ -42,7 +41,7 @@ namespace SharpBox2D.Pooling
  * @author Daniel Murphy
  */
 
-    public class ContactStack<CType> : MutableStack<Contact> where CType : Contact
+    internal class ContactStack<CType> : MutableStack<Contact> where CType : Contact
     {
         private IWorldPool pool;
         private Func<IWorldPool, CType> _factoryM;
@@ -64,7 +63,7 @@ namespace SharpBox2D.Pooling
         }
     }
 
-    public class Vec2Stack : OrderedStack<Vec2>
+    internal class Vec2Stack : OrderedStack<Vec2>
     {
         public Vec2Stack(int argStackSize, int argContainerSize)
             : base(argStackSize, argContainerSize)
@@ -77,7 +76,7 @@ namespace SharpBox2D.Pooling
         }
     }
 
-    public class Vec3Stack : OrderedStack<Vec3>
+    internal class Vec3Stack : OrderedStack<Vec3>
     {
         public Vec3Stack(int argStackSize, int argContainerSize)
             : base(argStackSize, argContainerSize)
@@ -90,7 +89,7 @@ namespace SharpBox2D.Pooling
         }
     }
 
-    public class Ma22Stack : OrderedStack<Mat22>
+    internal class Ma22Stack : OrderedStack<Mat22>
     {
         public Ma22Stack(int argStackSize, int argContainerSize)
             : base(argStackSize, argContainerSize)
@@ -103,7 +102,7 @@ namespace SharpBox2D.Pooling
         }
     }
 
-    public class AABBStack : OrderedStack<AABB>
+    internal class AABBStack : OrderedStack<AABB>
     {
         public AABBStack(int argStackSize, int argContainerSize)
             : base(argStackSize, argContainerSize)
@@ -116,7 +115,7 @@ namespace SharpBox2D.Pooling
         }
     }
 
-    public class RotStack : OrderedStack<Rot>
+    internal class RotStack : OrderedStack<Rot>
     {
         public RotStack(int argStackSize, int argContainerSize)
             : base(argStackSize, argContainerSize)
@@ -129,7 +128,7 @@ namespace SharpBox2D.Pooling
         }
     }
 
-    public class Ma33Stack : OrderedStack<Mat33>
+    internal class Ma33Stack : OrderedStack<Mat33>
     {
         public Ma33Stack(int argStackSize, int argContainerSize)
             : base(argStackSize, argContainerSize)
@@ -159,10 +158,7 @@ namespace SharpBox2D.Pooling
 
         private IWorldPool world;
 
-        public DefaultWorldPool()
-        {
-
-        }
+        public DefaultWorldPool() { }
 
         private ContactStack<PolygonContact> pcstack;
         private ContactStack<CircleContact> ccstack;

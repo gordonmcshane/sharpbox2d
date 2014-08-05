@@ -162,6 +162,9 @@
     <Compile Include="Particle\ParticleType.cs" />
     <Compile Include="Particle\StackQueue.cs" />
     <Compile Include="Particle\VoronoiDiagram.cs" />
+    <Compile Include="Particle\VoronoiDiagramCallback.cs" />
+    <Compile Include="Particle\VoronoiDiagramTask.cs" />
+    <Compile Include="Particle\VoronoiDiagramTaskPool.cs" />
     <Compile Include="Pooling\Arrays\FloatArray.cs" />
     <Compile Include="Pooling\Arrays\GeneratorArray.cs" />
     <Compile Include="Pooling\Arrays\IntArray.cs" />

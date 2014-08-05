@@ -35,8 +35,6 @@ namespace SharpBox2D.Common
 {
     public struct Rot : IEquatable<Rot>
     {
-        private static readonly long serialVersionUID = 1L;
-
         public float s;
         public float c; // sin and cos
 

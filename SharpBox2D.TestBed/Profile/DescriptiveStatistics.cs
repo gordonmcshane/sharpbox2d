@@ -113,7 +113,7 @@ namespace SharpBox2D.TestBed.Profile
             return 0f;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return "";
         }

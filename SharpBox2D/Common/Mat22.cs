@@ -33,8 +33,6 @@ namespace SharpBox2D.Common
  */
     public struct Mat22 : IEquatable<Mat22>
     {
-        private static readonly long serialVersionUID = 2L;
-
         public Vec2 ex, ey;
 
         /** Convert the matrix to printable format. */

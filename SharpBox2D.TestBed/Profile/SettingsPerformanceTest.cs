@@ -24,14 +24,14 @@ namespace SharpBox2D.TestBed.Profile
         }
 
 
-        public void setupTest(int testNum)
+        public override void setupTest(int testNum)
         {
             World w = new World(new Vec2(0, -10));
             world.setupWorld(w);
         }
 
 
-        public void preStep(int testNum)
+        public override void preStep(int testNum)
         {
             Settings.FAST_ABS = testNum == 1;
             Settings.FAST_ATAN2 = testNum == 2;

@@ -65,7 +65,7 @@ namespace SharpBox2D.TestBed.Tests.Math
                 speedIterations = int.Parse(args[5]);
                 overall = int.Parse(args[6]);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Parameters: <number of tables to use> <most precise table value (smallest)> "
                                   +
