@@ -1,11 +1,15 @@
-package org.jbox2d.testbed.framework;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
 
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.World;
+namespace SharpBox2D.TestBed.Framework
+{
 
-public class DefaultWorldCreator implements WorldCreator {
-  @Override
-  public World createWorld(Vec2 gravity) {
-    return new World(gravity);
-  }
+    public class DefaultWorldCreator : WorldCreator
+    {
+
+        public World createWorld(Vec2 gravity)
+        {
+            return new World(gravity);
+        }
+    }
 }

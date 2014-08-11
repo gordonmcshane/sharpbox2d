@@ -24,338 +24,389 @@
 /**
  * Created at 5:43:20 AM Jan 14, 2011
  */
-package org.jbox2d.testbed.tests;
+using System;
+using System.Diagnostics;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Broadphase;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.Pooling.Arrays;
+using SharpBox2D.TestBed.Framework;
 
-import java.util.Random;
+namespace SharpBox2D.TestBed.Tests
+{
 
-import org.jbox2d.callbacks.TreeCallback;
-import org.jbox2d.callbacks.TreeRayCastCallback;
-import org.jbox2d.collision.AABB;
-import org.jbox2d.collision.RayCastInput;
-import org.jbox2d.collision.RayCastOutput;
-import org.jbox2d.collision.broadphase.BroadPhaseStrategy;
-import org.jbox2d.collision.broadphase.DynamicTree;
-import org.jbox2d.common.Color3f;
-import org.jbox2d.common.MathUtils;
-import org.jbox2d.common.Settings;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.pooling.arrays.Vec2Array;
-import org.jbox2d.testbed.framework.TestbedSettings;
-import org.jbox2d.testbed.framework.TestbedTest;
 
 /**
  * @author Daniel Murphy
  */
-public class DynamicTreeTest extends TestbedTest implements TreeCallback,
-		TreeRayCastCallback {
 
-	int e_actorCount = 128;
-	float worldExtent;
-	float m_proxyExtent;
+    public class DynamicTreeTest : TestbedTest, TreeCallback,
+        TreeRayCastCallback
+    {
 
-	BroadPhaseStrategy m_tree;
-	AABB m_queryAABB;
-	RayCastInput m_rayCastInput;
-	RayCastOutput m_rayCastOutput;
-	Actor m_rayActor;
-	Actor m_actors[] = new Actor[e_actorCount];
-	int m_stepCount;
-	boolean m_automated;
-	Random rand = new Random();
+        private const int _e_actorCount = 128;
+        private float worldExtent;
+        private float m_proxyExtent;
 
-	@Override
-	public void initTest(boolean argDeserialized) {
-		worldExtent = 15.0f;
-		m_proxyExtent = 0.5f;
+        private BroadPhaseStrategy m_tree;
+        private AABB m_queryAABB;
+        private RayCastInput m_rayCastInput;
+        private RayCastOutput m_rayCastOutput;
+        private Actor m_rayActor;
+        private Actor[] m_actors = new Actor[_e_actorCount];
+        private int m_stepCount;
+        private bool m_automated;
+        private Random rand = new Random();
 
-		m_tree = new DynamicTree();
 
-		for (int i = 0; i < e_actorCount; ++i) {
-			Actor actor = m_actors[i] = new Actor();
-			GetRandomAABB(actor.aabb);
-			actor.proxyId = m_tree.createProxy(actor.aabb, actor);
-		}
+        public override void initTest(bool argDeserialized)
+        {
+            worldExtent = 15.0f;
+            m_proxyExtent = 0.5f;
 
-		m_stepCount = 0;
+            m_tree = new DynamicTree();
 
-		float h = worldExtent;
-		m_queryAABB = new AABB();
-		m_queryAABB.lowerBound.set(-3.0f, -4.0f + h);
-		m_queryAABB.upperBound.set(5.0f, 6.0f + h);
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                Actor actor = m_actors[i] = new Actor();
+                GetRandomAABB(actor.aabb);
+                actor.proxyId = m_tree.createProxy(actor.aabb, actor);
+            }
 
-		m_rayCastInput = new RayCastInput();
-		m_rayCastInput.p1.set(-5.0f, 5.0f + h);
-		m_rayCastInput.p2.set(7.0f, -4.0f + h);
-		// m_rayCastInput.p1.set(0.0f, 2.0f + h);
-		// m_rayCastInput.p2.set(0.0f, -2.0f + h);
-		m_rayCastInput.maxFraction = 1.0f;
+            m_stepCount = 0;
 
-		m_rayCastOutput = new RayCastOutput();
+            float h = worldExtent;
+            m_queryAABB = new AABB();
+            m_queryAABB.lowerBound.set(-3.0f, -4.0f + h);
+            m_queryAABB.upperBound.set(5.0f, 6.0f + h);
 
-		m_automated = false;
-	}
+            m_rayCastInput = new RayCastInput();
+            m_rayCastInput.p1.set(-5.0f, 5.0f + h);
+            m_rayCastInput.p2.set(7.0f, -4.0f + h);
+            // m_rayCastInput.p1.set(0.0f, 2.0f + h);
+            // m_rayCastInput.p2.set(0.0f, -2.0f + h);
+            m_rayCastInput.maxFraction = 1.0f;
 
-	@Override
-	public void keyPressed(char argKeyChar, int argKeyCode) {
-		switch (argKeyChar) {
-		case 'a':
-			m_automated = !m_automated;
-			break;
+            m_rayCastOutput = new RayCastOutput();
 
-		case 'c':
-			CreateProxy();
-			break;
+            m_automated = false;
+        }
 
-		case 'd':
-			DestroyProxy();
-			break;
 
-		case 'm':
-			MoveProxy();
-			break;
-		}
-	}
+        public override void keyPressed(char argKeyChar, int argKeyCode)
+        {
+            switch (argKeyChar)
+            {
+                case 'a':
+                    m_automated = !m_automated;
+                    break;
 
-	private Vec2Array vecPool = new Vec2Array();
+                case 'c':
+                    CreateProxy();
+                    break;
 
-	@Override
-	public void step(TestbedSettings settings) {
-		m_rayActor = null;
-		for (int i = 0; i < e_actorCount; ++i) {
-			m_actors[i].fraction = 1.0f;
-			m_actors[i].overlap = false;
-		}
+                case 'd':
+                    DestroyProxy();
+                    break;
 
-		if (m_automated == true) {
-			int actionCount = MathUtils.max(1, e_actorCount >> 2);
+                case 'm':
+                    MoveProxy();
+                    break;
+            }
+        }
 
-			for (int i = 0; i < actionCount; ++i) {
-				Action();
-			}
-		}
+        private Vec2Array vecPool = new Vec2Array();
 
-		Query();
-		RayCast();
-		Vec2[] vecs = vecPool.get(4);
 
-		for (int i = 0; i < e_actorCount; ++i) {
-			Actor actor = m_actors[i];
-			if (actor.proxyId == -1)
-				continue;
+        public override void step(TestbedSettings settings)
+        {
+            m_rayActor = null;
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                m_actors[i].fraction = 1.0f;
+                m_actors[i].overlap = false;
+            }
 
-			Color3f c = new Color3f(0.9f, 0.9f, 0.9f);
-			if (actor == m_rayActor && actor.overlap) {
-				c.set(0.9f, 0.6f, 0.6f);
-			} else if (actor == m_rayActor) {
-				c.set(0.6f, 0.9f, 0.6f);
-			} else if (actor.overlap) {
-				c.set(0.6f, 0.6f, 0.9f);
-			}
-			actor.aabb.getVertices(vecs);
-			getDebugDraw().drawPolygon(vecs, 4, c);
-		}
+            if (m_automated == true)
+            {
+                int actionCount = MathUtils.max(1, _e_actorCount >> 2);
 
-		Color3f c = new Color3f(0.7f, 0.7f, 0.7f);
-		m_queryAABB.getVertices(vecs);
-		getDebugDraw().drawPolygon(vecs, 4, c);
+                for (int i = 0; i < actionCount; ++i)
+                {
+                    Action();
+                }
+            }
 
-		getDebugDraw().drawSegment(m_rayCastInput.p1, m_rayCastInput.p2, c);
+            Query();
+            RayCast();
+            Vec2[] vecs = vecPool.get(4);
 
-		Color3f c1 = new Color3f(0.2f, 0.9f, 0.2f);
-		Color3f c2 = new Color3f(0.9f, 0.2f, 0.2f);
-		getDebugDraw().drawPoint(m_rayCastInput.p1, 6.0f, c1);
-		getDebugDraw().drawPoint(m_rayCastInput.p2, 6.0f, c2);
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                Actor actor = m_actors[i];
+                if (actor.proxyId == -1)
+                    continue;
 
-		if (m_rayActor != null) {
-			Color3f cr = new Color3f(0.2f, 0.2f, 0.9f);
-			Vec2 p = m_rayCastInput.p2.sub(m_rayCastInput.p1)
-					.mulLocal(m_rayActor.fraction).addLocal(m_rayCastInput.p1);
-			getDebugDraw().drawPoint(p, 6.0f, cr);
-		}
+                Color4f c = new Color4f(0.9f, 0.9f, 0.9f);
+                if (actor == m_rayActor && actor.overlap)
+                {
+                    c.set(0.9f, 0.6f, 0.6f);
+                }
+                else if (actor == m_rayActor)
+                {
+                    c.set(0.6f, 0.9f, 0.6f);
+                }
+                else if (actor.overlap)
+                {
+                    c.set(0.6f, 0.6f, 0.9f);
+                }
+                actor.aabb.getVertices(vecs);
+                getDebugDraw().drawPolygon(vecs, 4, c);
+            }
 
-		++m_stepCount;
+            Color4f c2 = new Color4f(0.7f, 0.7f, 0.7f);
+            m_queryAABB.getVertices(vecs);
+            getDebugDraw().drawPolygon(vecs, 4, c2);
 
-		if (settings.getSetting(TestbedSettings.DrawTree).enabled) {
-			m_tree.drawTree(getDebugDraw());
-		}
+            getDebugDraw().drawSegment(m_rayCastInput.p1, m_rayCastInput.p2, c2);
 
-		getDebugDraw().drawString(5, 30,
-				"(c)reate proxy, (d)estroy proxy, (a)utomate", Color3f.WHITE);
-	}
+            Color4f c1 = new Color4f(0.2f, 0.9f, 0.2f);
+            Color4f c3 = new Color4f(0.9f, 0.2f, 0.2f);
+            getDebugDraw().drawPoint(m_rayCastInput.p1, 6.0f, c1);
+            getDebugDraw().drawPoint(m_rayCastInput.p2, 6.0f, c3);
 
-	public boolean treeCallback(int proxyId) {
-		Actor actor = (Actor) m_tree.getUserData(proxyId);
-		actor.overlap = AABB.testOverlap(m_queryAABB, actor.aabb);
-		return true;
-	}
+            if (m_rayActor != null)
+            {
+                Color4f cr = new Color4f(0.2f, 0.2f, 0.9f);
+                m_rayCastInput.p2.sub(m_rayCastInput.p1);
+                m_rayCastInput.p2.mulLocal(m_rayActor.fraction);
+                m_rayCastInput.p2.addLocal(m_rayCastInput.p1);
+                Vec2 p = m_rayCastInput.p2;
+                getDebugDraw().drawPoint(p, 6.0f, cr);
+            }
 
-	public float raycastCallback(final RayCastInput input,
-			int proxyId) {
-		Actor actor = (Actor) m_tree.getUserData(proxyId);
+            ++m_stepCount;
 
-		RayCastOutput output = new RayCastOutput();
-		boolean hit = actor.aabb.raycast(output, input, getWorld().getPool());
+            if (settings.getSetting(TestbedSettings.DrawTree).enabled)
+            {
+                m_tree.drawTree(getDebugDraw());
+            }
 
-		if (hit) {
-			m_rayCastOutput = output;
-			m_rayActor = actor;
-			m_rayActor.fraction = output.fraction;
-			return output.fraction;
-		}
+            getDebugDraw().drawString(5, 30,
+                "(c)reate proxy, (d)estroy proxy, (a)utomate", Color4f.WHITE);
+        }
 
-		return input.maxFraction;
-	}
+        public bool treeCallback(int proxyId)
+        {
+            Actor actor = (Actor) m_tree.getUserData(proxyId);
+            actor.overlap = AABB.testOverlap(m_queryAABB, actor.aabb);
+            return true;
+        }
 
-	public static class Actor {
-		AABB aabb = new AABB();
-		float fraction;
-		boolean overlap;
-		int proxyId;
-	}
+        public float raycastCallback(RayCastInput input,
+            int proxyId)
+        {
+            Actor actor = (Actor) m_tree.getUserData(proxyId);
 
-	public void GetRandomAABB(AABB aabb) {
-		Vec2 w = new Vec2();
-		w.set(2.0f * m_proxyExtent, 2.0f * m_proxyExtent);
-		// aabb.lowerBound.x = -m_proxyExtent;
-		// aabb.lowerBound.y = -m_proxyExtent + worldExtent;
-		aabb.lowerBound.x = MathUtils.randomFloat(rand, -worldExtent,
-				worldExtent);
-		aabb.lowerBound.y = MathUtils.randomFloat(rand, 0.0f,
-				2.0f * worldExtent);
-		aabb.upperBound.set(aabb.lowerBound).addLocal(w);
-	}
+            RayCastOutput output = new RayCastOutput();
+            bool hit = actor.aabb.raycast(output, input, getWorld().getPool());
 
-	public void MoveAABB(AABB aabb) {
-		Vec2 d = new Vec2();
-		d.x = MathUtils.randomFloat(rand, -0.5f, 0.5f);
-		d.y = MathUtils.randomFloat(rand, -0.5f, 0.5f);
-		// d.x = 2.0f;
-		// d.y = 0.0f;
-		aabb.lowerBound.addLocal(d);
-		aabb.upperBound.addLocal(d);
+            if (hit)
+            {
+                m_rayCastOutput = output;
+                m_rayActor = actor;
+                m_rayActor.fraction = output.fraction;
+                return output.fraction;
+            }
 
-		Vec2 c0 = aabb.lowerBound.add(aabb.upperBound).mulLocal(.5f);
-		Vec2 min = new Vec2();
-		min.set(-worldExtent, 0.0f);
-		Vec2 max = new Vec2();
-		max.set(worldExtent, 2.0f * worldExtent);
-		Vec2 c = MathUtils.clamp(c0, min, max);
+            return input.maxFraction;
+        }
 
-		aabb.lowerBound.addLocal(c.sub(c0));
-		aabb.upperBound.addLocal(c.sub(c0));
-	}
+        public class Actor
+        {
+            internal AABB aabb = new AABB();
+            internal float fraction;
+            internal bool overlap;
+            internal int proxyId;
+        }
 
-	public void CreateProxy() {
-		for (int i = 0; i < e_actorCount; ++i) {
-			int j = MathUtils.abs(rand.nextInt() % e_actorCount);
-			Actor actor = m_actors[j];
-			if (actor.proxyId == -1) {
-				GetRandomAABB(actor.aabb);
-				actor.proxyId = m_tree.createProxy(actor.aabb, actor);
-				return;
-			}
-		}
-	}
+        public void GetRandomAABB(AABB aabb)
+        {
+            Vec2 w = new Vec2();
+            w.set(2.0f*m_proxyExtent, 2.0f*m_proxyExtent);
+            // aabb.lowerBound.x = -m_proxyExtent;
+            // aabb.lowerBound.y = -m_proxyExtent + worldExtent;
+            aabb.lowerBound.x = MathUtils.randomFloat(rand, -worldExtent,
+                worldExtent);
+            aabb.lowerBound.y = MathUtils.randomFloat(rand, 0.0f,
+                2.0f*worldExtent);
+            aabb.upperBound.set(aabb.lowerBound);
+            aabb.upperBound.addLocal(w);
+        }
 
-	public void DestroyProxy() {
-		for (int i = 0; i < e_actorCount; ++i) {
-			int j = MathUtils.abs(rand.nextInt() % e_actorCount);
-			Actor actor = m_actors[j];
-			if (actor.proxyId != -1) {
-				m_tree.destroyProxy(actor.proxyId);
-				actor.proxyId = -1;
-				return;
-			}
-		}
-	}
+        public void MoveAABB(AABB aabb)
+        {
+            Vec2 d = new Vec2();
+            d.x = MathUtils.randomFloat(rand, -0.5f, 0.5f);
+            d.y = MathUtils.randomFloat(rand, -0.5f, 0.5f);
+            // d.x = 2.0f;
+            // d.y = 0.0f;
+            aabb.lowerBound.addLocal(d);
+            aabb.upperBound.addLocal(d);
+            aabb.lowerBound.add(aabb.upperBound);
+            aabb.lowerBound.mulLocal(.5f);
+            Vec2 c0 = aabb.lowerBound;
+            Vec2 min = new Vec2();
+            min.set(-worldExtent, 0.0f);
+            Vec2 max = new Vec2();
+            max.set(worldExtent, 2.0f*worldExtent);
+            Vec2 c = MathUtils.clamp(c0, min, max);
 
-	public void MoveProxy() {
-		for (int i = 0; i < e_actorCount; ++i) {
-			int j = MathUtils.abs(rand.nextInt() % e_actorCount);
-			Actor actor = m_actors[j];
-			if (actor.proxyId == -1) {
-				continue;
-			}
+            aabb.lowerBound.addLocal(c.sub(c0));
+            aabb.upperBound.addLocal(c.sub(c0));
+        }
 
-			AABB aabb0 = new AABB(actor.aabb);
-			MoveAABB(actor.aabb);
-			Vec2 displacement = actor.aabb.getCenter().sub(aabb0.getCenter());
-			m_tree.moveProxy(actor.proxyId, new AABB(actor.aabb), displacement);
-			return;
-		}
-	}
+        public void CreateProxy()
+        {
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                int j = MathUtils.abs(_random.Next()%_e_actorCount);
+                Actor actor = m_actors[j];
+                if (actor.proxyId == -1)
+                {
+                    GetRandomAABB(actor.aabb);
+                    actor.proxyId = m_tree.createProxy(actor.aabb, actor);
+                    return;
+                }
+            }
+        }
 
-	public void Action() {
-		int choice = MathUtils.abs(rand.nextInt() % 20);
+        public void DestroyProxy()
+        {
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                int j = MathUtils.abs(_random.Next()%_e_actorCount);
+                Actor actor = m_actors[j];
+                if (actor.proxyId != -1)
+                {
+                    m_tree.destroyProxy(actor.proxyId);
+                    actor.proxyId = -1;
+                    return;
+                }
+            }
+        }
 
-		switch (choice) {
-		case 0:
-			CreateProxy();
-			break;
+        public void MoveProxy()
+        {
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                int j = MathUtils.abs(_random.Next()%_e_actorCount);
+                Actor actor = m_actors[j];
+                if (actor.proxyId == -1)
+                {
+                    continue;
+                }
 
-		case 1:
-			DestroyProxy();
-			break;
+                AABB aabb0 = new AABB(actor.aabb);
+                MoveAABB(actor.aabb);
+                Vec2 displacement = actor.aabb.getCenter().sub(aabb0.getCenter());
+                m_tree.moveProxy(actor.proxyId, new AABB(actor.aabb), displacement);
+                return;
+            }
+        }
 
-		default:
-			MoveProxy();
-		}
-	}
+        private Random _random = new Random();
 
-	public void Query() {
-		m_tree.query(this, m_queryAABB);
+        public void Action()
+        {
+            int choice = MathUtils.abs(_random.Next()%20);
 
-		for (int i = 0; i < e_actorCount; ++i) {
-			if (m_actors[i].proxyId == -1) {
-				continue;
-			}
+            switch (choice)
+            {
+                case 0:
+                    CreateProxy();
+                    break;
 
-			boolean overlap = AABB.testOverlap(m_queryAABB, m_actors[i].aabb);
-			assert (overlap == m_actors[i].overlap);
-		}
-	}
+                case 1:
+                    DestroyProxy();
+                    break;
 
-	public void RayCast() {
-		m_rayActor = null;
+                default:
+                    MoveProxy();
+                    break;
+            }
+        }
 
-		RayCastInput input = new RayCastInput();
-		input.set(m_rayCastInput);
+        public void Query()
+        {
+            m_tree.query(this, m_queryAABB);
 
-		// Ray cast against the dynamic tree.
-		m_tree.raycast(this, input);
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                if (m_actors[i].proxyId == -1)
+                {
+                    continue;
+                }
 
-		// Brute force ray cast.
-		Actor bruteActor = null;
-		RayCastOutput bruteOutput = new RayCastOutput();
-		for (int i = 0; i < e_actorCount; ++i) {
-			if (m_actors[i].proxyId == -1) {
-				continue;
-			}
+                bool overlap = AABB.testOverlap(m_queryAABB, m_actors[i].aabb);
+                Debug.Assert(overlap == m_actors[i].overlap);
+            }
+        }
 
-			RayCastOutput output = new RayCastOutput();
-			boolean hit = m_actors[i].aabb.raycast(output, input,
-					getWorld().getPool());
-			if (hit) {
-				bruteActor = m_actors[i];
-				bruteOutput = output;
-				input.maxFraction = output.fraction;
-			}
-		}
+        public void RayCast()
+        {
+            m_rayActor = null;
 
-		if (bruteActor != null) {
-		  if(MathUtils.abs(bruteOutput.fraction
-                    - m_rayCastOutput.fraction) > Settings.EPSILON) {
-		    System.out.println("wrong!");
-		    assert (MathUtils.abs(bruteOutput.fraction
-              - m_rayCastOutput.fraction) <= 20 * Settings.EPSILON);
-		  }
-			
-		}
-	}
+            RayCastInput input = new RayCastInput();
+            input.set(m_rayCastInput);
 
-	@Override
-	public String getTestName() {
-		return "Dynamic Tree";
-	}
+            // Ray cast against the dynamic tree.
+            m_tree.raycast(this, input);
 
+            // Brute force ray cast.
+            Actor bruteActor = null;
+            RayCastOutput bruteOutput = new RayCastOutput();
+            for (int i = 0; i < _e_actorCount; ++i)
+            {
+                if (m_actors[i].proxyId == -1)
+                {
+                    continue;
+                }
+
+                RayCastOutput output = new RayCastOutput();
+                bool hit = m_actors[i].aabb.raycast(output, input,
+                    getWorld().getPool());
+                if (hit)
+                {
+                    bruteActor = m_actors[i];
+                    bruteOutput = output;
+                    input.maxFraction = output.fraction;
+                }
+            }
+
+            if (bruteActor != null)
+            {
+                if (MathUtils.abs(bruteOutput.fraction
+                                  - m_rayCastOutput.fraction) > Settings.EPSILON)
+                {
+                    Debug.WriteLine("wrong!");
+                    Debug.Assert(MathUtils.abs(bruteOutput.fraction
+                                               - m_rayCastOutput.fraction) <= 20*Settings.EPSILON);
+                }
+
+            }
+        }
+
+
+        public override string getTestName()
+        {
+            return "Dynamic Tree";
+        }
+
+    }
 }

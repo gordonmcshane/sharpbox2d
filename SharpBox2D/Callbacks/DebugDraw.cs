@@ -93,14 +93,14 @@ namespace SharpBox2D.Callbacks
 
         /**
    * Draw a closed polygon provided in CCW order. This implementation uses
-   * {@link #drawSegment(Vec2, Vec2, Color3f)} to draw each side of the polygon.
+   * {@link #drawSegment(Vec2, Vec2, Color4f)} to draw each side of the polygon.
    * 
    * @param vertices
    * @param vertexCount
    * @param color
    */
 
-        public void drawPolygon(Vec2[] vertices, int vertexCount, Color3f color)
+        public void drawPolygon(Vec2[] vertices, int vertexCount, Color4f color)
         {
             if (vertexCount == 1)
             {
@@ -119,7 +119,7 @@ namespace SharpBox2D.Callbacks
             }
         }
 
-        public abstract void drawPoint(Vec2 argPoint, float argRadiusOnScreen, Color3f argColor);
+        public abstract void drawPoint(Vec2 argPoint, float argRadiusOnScreen, Color4f argColor);
 
         /**
    * Draw a solid closed polygon provided in CCW order.
@@ -128,7 +128,7 @@ namespace SharpBox2D.Callbacks
    * @param vertexCount
    * @param color
    */
-        public abstract void drawSolidPolygon(Vec2[] vertices, int vertexCount, Color3f color);
+        public abstract void drawSolidPolygon(Vec2[] vertices, int vertexCount, Color4f color);
 
         /**
    * Draw a circle.
@@ -137,11 +137,11 @@ namespace SharpBox2D.Callbacks
    * @param radius
    * @param color
    */
-        public abstract void drawCircle(Vec2 center, float radius, Color3f color);
+        public abstract void drawCircle(Vec2 center, float radius, Color4f color);
 
         /** Draws a circle with an axis */
 
-        public void drawCircle(Vec2 center, float radius, Vec2 axis, Color3f color)
+        public void drawCircle(Vec2 center, float radius, Vec2 axis, Color4f color)
         {
             drawCircle(center, radius, color);
         }
@@ -154,7 +154,7 @@ namespace SharpBox2D.Callbacks
    * @param axis
    * @param color
    */
-        public abstract void drawSolidCircle(Vec2 center, float radius, Vec2 axis, Color3f color);
+        public abstract void drawSolidCircle(Vec2 center, float radius, Vec2 axis, Color4f color);
 
         /**
    * Draw a line segment.
@@ -163,7 +163,7 @@ namespace SharpBox2D.Callbacks
    * @param p2
    * @param color
    */
-        public abstract void drawSegment(Vec2 p1, Vec2 p2, Color3f color);
+        public abstract void drawSegment(Vec2 p1, Vec2 p2, Color4f color);
 
         /**
    * Draw a transform. Choose your own length scale
@@ -180,7 +180,7 @@ namespace SharpBox2D.Callbacks
    * @param s
    * @param color
    */
-        public abstract void drawString(float x, float y, string s, Color3f color);
+        public abstract void drawString(float x, float y, string s, Color4f color);
 
         /**
    * Draw a particle array
@@ -204,7 +204,7 @@ namespace SharpBox2D.Callbacks
         {
         }
 
-        public void drawString(Vec2 pos, string s, Color3f color)
+        public void drawString(Vec2 pos, string s, Color4f color)
         {
             drawString(pos.x, pos.y, s, color);
         }

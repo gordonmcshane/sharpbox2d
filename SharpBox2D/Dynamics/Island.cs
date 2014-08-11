@@ -433,7 +433,7 @@ namespace SharpBox2D.Dynamics
                         continue;
                     }
 
-                    if ((b.m_flags & Body.e_autoSleepFlag) == 0
+                    if ((b.m_flags & BodyFlags.AutoSleep) == 0
                         || b.m_angularVelocity*b.m_angularVelocity > angTolSqr
                         || Vec2.dot(b.m_linearVelocity, b.m_linearVelocity) > linTolSqr)
                     {

@@ -182,8 +182,12 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective masses.
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref m_rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref m_rB);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp, ref m_rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref m_rB);
 
             // J = [-I -r1_skew I r2_skew]
             // [ 0 -1 0 1]
@@ -301,7 +305,9 @@ namespace SharpBox2D.Dynamics.Joints
 
                 Vec2.crossToOutUnsafe(wB, m_rB, ref Cdot1);
                 Vec2.crossToOutUnsafe(wA, m_rA, ref temp);
-                Cdot1.addLocal(vB).subLocal(vA).subLocal(temp);
+                Cdot1.addLocal(vB);
+                Cdot1.subLocal(vA);
+                Cdot1.subLocal(temp);
 
                 Vec2 impulse1 = P;
                 Mat33.mul22ToOutUnsafe(m_mass, Cdot1, ref impulse1);
@@ -322,7 +328,9 @@ namespace SharpBox2D.Dynamics.Joints
             {
                 Vec2.crossToOutUnsafe(wA, m_rA, ref temp);
                 Vec2.crossToOutUnsafe(wB, m_rB, ref Cdot1);
-                Cdot1.addLocal(vB).subLocal(vA).subLocal(temp);
+                Cdot1.addLocal(vB);
+                Cdot1.subLocal(vA);
+                Cdot1.subLocal(temp);
                 float Cdot2 = wB - wA;
 
                 Vec3 Cdot = pool.popVec3();
@@ -373,8 +381,11 @@ namespace SharpBox2D.Dynamics.Joints
             float mA = m_invMassA, mB = m_invMassB;
             float iA = m_invIA, iB = m_invIB;
 
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp , ref rA);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp , ref rB);
             float positionError, angularError;
 
             Mat33 K = pool.popMat33();
@@ -392,7 +403,10 @@ namespace SharpBox2D.Dynamics.Joints
             K.ez.z = iA + iB;
             if (m_frequencyHz > 0.0f)
             {
-                C1.set(cB).addLocal(rB).subLocal(cA).subLocal(rA);
+                C1.set(cB);
+                C1.addLocal(rB);
+                C1.subLocal(cA);
+                C1.subLocal(rA);
 
                 positionError = C1.length();
                 angularError = 0.0f;
@@ -410,7 +424,10 @@ namespace SharpBox2D.Dynamics.Joints
             }
             else
             {
-                C1.set(cB).addLocal(rB).subLocal(cA).subLocal(rA);
+                C1.set(cB);
+                C1.addLocal(rB);
+                C1.subLocal(cA);
+                C1.subLocal(rA);
                 float C2 = aB - aA - m_referenceAngle;
 
                 positionError = C1.length();

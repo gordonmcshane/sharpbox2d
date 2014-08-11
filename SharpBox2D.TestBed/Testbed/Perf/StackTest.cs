@@ -24,13 +24,14 @@
 /**
  * Created at 6:24:51 AM Jan 20, 2011
  */
-package org.jbox2d.testbed.perf;
+using SharpBox2D.Common;
+using SharpBox2D.Pooling;
+using SharpBox2D.Pooling.Normal;
+using SharpBox2D.TestBed.Profile;
 
-import org.jbox2d.common.MathUtils;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.pooling.IWorldPool;
-import org.jbox2d.pooling.normal.DefaultWorldPool;
-import org.jbox2d.profile.BasicPerformanceTest;
+namespace SharpBox2D.TestBed.Perf
+{
+
 
 
 //Test Name               Milliseconds Avg
@@ -46,136 +47,159 @@ import org.jbox2d.profile.BasicPerformanceTest;
 /**
  * @author Daniel Murphy
  */
-public class StackTest extends BasicPerformanceTest {
 
-  public static final int INNER_ITERS = 50000;
-  public static final int OUTER_ITERS = 200;
+    public class StackTest : BasicPerformanceTest
+    {
 
-  public static String[] tests = new String[] {"Pop2Sep", "Pop2Cont", "Pop3Sep", "Pop3Cont",
-      "Pop4Sep", "Pop4Cont", "Pop9Sep", "Pop9Cont"};
-  public static float aStore = 0;
+        public static int INNER_ITERS = 50000;
+        public static int OUTER_ITERS = 200;
 
-  public StackTest() {
-    super(8, OUTER_ITERS, INNER_ITERS);
-  }
+        public static string[] tests = new string[]
+        {
+            "Pop2Sep", "Pop2Cont", "Pop3Sep", "Pop3Cont",
+            "Pop4Sep", "Pop4Cont", "Pop9Sep", "Pop9Cont"
+        };
+
+        public static float aStore = 0;
+
+        public StackTest() : base(8, OUTER_ITERS, INNER_ITERS)
+        {
+        }
 
 
-  public float op(Vec2 argVec) {
-    argVec.set(MathUtils.randomFloat(-100, 100), MathUtils.randomFloat(-100, 100));
-    argVec.mulLocal(3.2f);
-    float s = argVec.length();
-    argVec.normalize();
-    return s;
-  }
+        public float op(Vec2 argVec)
+        {
 
-  private final IWorldPool wp = new DefaultWorldPool(100, 10);
 
-  @Override
-  public void step(int argNum) {
-    float a = 0;
-    for (int i = 0; i < INNER_ITERS; i++) {
-      switch (argNum) {
-        case 0: {
-          final Vec2 v1 = wp.popVec2();
-          final Vec2 v2 = wp.popVec2();
-          a += op(v1);
-          a += op(v2);
-          wp.pushVec2(2);
-          break;
+            argVec.set(MathUtils.randomFloat(-100, 100), MathUtils.randomFloat(-100, 100));
+            argVec.mulLocal(3.2f);
+            float s = argVec.length();
+            argVec.normalize();
+            return s;
         }
-        case 1: {
-          final Vec2[] pc = wp.popVec2(2);
-          a += op(pc[0]);
-          a += op(pc[1]);
-          wp.pushVec2(2);
-          break;
+
+        private IWorldPool wp = new DefaultWorldPool(100, 10);
+
+
+        public override void step(int argNum)
+        {
+            float a = 0;
+            for (int i = 0; i < INNER_ITERS; i++)
+            {
+                switch (argNum)
+                {
+                    case 0:
+                    {
+                        Vec2 v1 = wp.popVec2();
+                        Vec2 v2 = wp.popVec2();
+                        a += op(v1);
+                        a += op(v2);
+                        wp.pushVec2(2);
+                        break;
+                    }
+                    case 1:
+                    {
+                        Vec2[] pc = wp.popVec2(2);
+                        a += op(pc[0]);
+                        a += op(pc[1]);
+                        wp.pushVec2(2);
+                        break;
+                    }
+                    case 2:
+                    {
+                        Vec2 v1 = wp.popVec2();
+                        Vec2 v2 = wp.popVec2();
+                        Vec2 v3 = wp.popVec2();
+                        a += op(v1);
+                        a += op(v2);
+                        a += op(v3);
+                        wp.pushVec2(3);
+                        break;
+                    }
+                    case 3:
+                    {
+                        Vec2[] pc = wp.popVec2(3);
+                        a += op(pc[0]);
+                        a += op(pc[1]);
+                        a += op(pc[2]);
+                        wp.pushVec2(3);
+                        break;
+                    }
+                    case 4:
+                    {
+                        Vec2 v1 = wp.popVec2();
+                        Vec2 v2 = wp.popVec2();
+                        Vec2 v3 = wp.popVec2();
+                        Vec2 v4 = wp.popVec2();
+                        a += op(v1);
+                        a += op(v2);
+                        a += op(v3);
+                        a += op(v4);
+                        wp.pushVec2(4);
+                        break;
+                    }
+                    case 5:
+                    {
+                        Vec2[] pc = wp.popVec2(4);
+                        a += op(pc[0]);
+                        a += op(pc[1]);
+                        a += op(pc[2]);
+                        a += op(pc[3]);
+                        wp.pushVec2(4);
+                    }
+                        break;
+                    case 6:
+                    {
+                        Vec2 v1 = wp.popVec2();
+                        Vec2 v2 = wp.popVec2();
+                        Vec2 v3 = wp.popVec2();
+                        Vec2 v4 = wp.popVec2();
+                        Vec2 v5 = wp.popVec2();
+                        Vec2 v6 = wp.popVec2();
+                        Vec2 v7 = wp.popVec2();
+                        Vec2 v8 = wp.popVec2();
+                        Vec2 v9 = wp.popVec2();
+                        a += op(v1);
+                        a += op(v2);
+                        a += op(v3);
+                        a += op(v4);
+                        a += op(v5);
+                        a += op(v6);
+                        a += op(v7);
+                        a += op(v8);
+                        a += op(v9);
+                        wp.pushVec2(9);
+                        break;
+                    }
+                    case 7:
+                    {
+                        Vec2[] pc = wp.popVec2(9);
+                        a += op(pc[0]);
+                        a += op(pc[1]);
+                        a += op(pc[2]);
+                        a += op(pc[3]);
+                        a += op(pc[4]);
+                        a += op(pc[5]);
+                        a += op(pc[6]);
+                        a += op(pc[7]);
+                        a += op(pc[8]);
+                        wp.pushVec2(9);
+                        break;
+                    }
+                }
+            }
+            aStore += a;
         }
-        case 2: {
-          final Vec2 v1 = wp.popVec2();
-          final Vec2 v2 = wp.popVec2();
-          final Vec2 v3 = wp.popVec2();
-          a += op(v1);
-          a += op(v2);
-          a += op(v3);
-          wp.pushVec2(3);
-          break;
+
+
+        public override string getTestName(int argNum)
+        {
+            return tests[argNum];
         }
-        case 3: {
-          final Vec2[] pc = wp.popVec2(3);
-          a += op(pc[0]);
-          a += op(pc[1]);
-          a += op(pc[2]);
-          wp.pushVec2(3);
-          break;
+
+        public static void main(string[] c)
+        {
+            (new StackTest()).go();
         }
-        case 4: {
-          final Vec2 v1 = wp.popVec2();
-          final Vec2 v2 = wp.popVec2();
-          final Vec2 v3 = wp.popVec2();
-          final Vec2 v4 = wp.popVec2();
-          a += op(v1);
-          a += op(v2);
-          a += op(v3);
-          a += op(v4);
-          wp.pushVec2(4);
-          break;
-        }
-        case 5: {
-          final Vec2[] pc = wp.popVec2(4);
-          a += op(pc[0]);
-          a += op(pc[1]);
-          a += op(pc[2]);
-          a += op(pc[3]);
-          wp.pushVec2(4);
-        }
-          break;
-        case 6: {
-          final Vec2 v1 = wp.popVec2();
-          final Vec2 v2 = wp.popVec2();
-          final Vec2 v3 = wp.popVec2();
-          final Vec2 v4 = wp.popVec2();
-          final Vec2 v5 = wp.popVec2();
-          final Vec2 v6 = wp.popVec2();
-          final Vec2 v7 = wp.popVec2();
-          final Vec2 v8 = wp.popVec2();
-          final Vec2 v9 = wp.popVec2();
-          a += op(v1);
-          a += op(v2);
-          a += op(v3);
-          a += op(v4);
-          a += op(v5);
-          a += op(v6);
-          a += op(v7);
-          a += op(v8);
-          a += op(v9);
-          wp.pushVec2(9);
-          break;
-        }
-        case 7: {
-          final Vec2[] pc = wp.popVec2(9);
-          a += op(pc[0]);
-          a += op(pc[1]);
-          a += op(pc[2]);
-          a += op(pc[3]);
-          a += op(pc[4]);
-          a += op(pc[5]);
-          a += op(pc[6]);
-          a += op(pc[7]);
-          a += op(pc[8]);
-          wp.pushVec2(9);
-          break;
-        }
-      }
     }
-    aStore += a;
-  }
-
-  @Override
-  public String getTestName(int argNum) {
-    return tests[argNum];
-  }
-
-  public static void main(String[] c) {
-    (new StackTest()).go();
-  }
 }

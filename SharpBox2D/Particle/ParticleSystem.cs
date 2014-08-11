@@ -649,7 +649,8 @@ namespace SharpBox2D.Particle
                 Vec2 pos = m_positionBuffer.data[i];
                 proxy.tag = computeTag(m_inverseDiameter*pos.x, m_inverseDiameter*pos.y);
             }
-            Array.Sort(m_proxyBuffer, 0, m_proxyCount);
+            if (m_proxyBuffer != null)
+                Array.Sort(m_proxyBuffer, 0, m_proxyCount);
             m_contactCount = 0;
             int c_index = 0;
             for (int i = 0; i < m_proxyCount; i++)
@@ -1028,7 +1029,10 @@ namespace SharpBox2D.Particle
                     Rot rotation = tempRot;
                     rotation.set(step.dt*group.m_angularVelocity);
                     Rot.mulToOutUnsafe(rotation, group.m_center, ref cross);
-                    temp.set(group.m_linearVelocity).mulLocal(step.dt).addLocal(group.m_center).subLocal(cross);
+                    temp.set(group.m_linearVelocity);
+                    temp.mulLocal(step.dt);
+                    temp.addLocal(group.m_center);
+                    temp.subLocal(cross);
                     tempXf.p.set(temp);
                     tempXf.q.set(rotation);
                     Transform.mulToOut(tempXf, group.m_transform, ref group.m_transform);

@@ -146,7 +146,9 @@ namespace SharpBox2D.Dynamics.Joints
 
         public override void getReactionForce(float inv_dt, ref Vec2 argOut)
         {
-            argOut.set(m_uB).mulLocal(m_impulse).mulLocal(inv_dt);
+            argOut.set(m_uB);
+            argOut.mulLocal(m_impulse); 
+            argOut.mulLocal(inv_dt);
         }
 
 
@@ -222,11 +224,19 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective masses.
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref m_rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref m_rB);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp, ref m_rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref m_rB);
 
-            m_uA.set(cA).addLocal(m_rA).subLocal(m_groundAnchorA);
-            m_uB.set(cB).addLocal(m_rB).subLocal(m_groundAnchorB);
+            m_uA.set(cA);
+            m_uA.addLocal(m_rA);
+            m_uA.subLocal(m_groundAnchorA);
+            m_uB.set(cB);
+            m_uB.addLocal(m_rB);
+            m_uB.subLocal(m_groundAnchorB);
 
             float lengthA = m_uA.length();
             float lengthB = m_uB.length();
@@ -273,8 +283,10 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 PA = pool.popVec2();
                 Vec2 PB = pool.popVec2();
 
-                PA.set(m_uA).mulLocal(-m_impulse);
-                PB.set(m_uB).mulLocal(-m_ratio*m_impulse);
+                PA.set(m_uA);
+                PA.mulLocal(-m_impulse);
+                PB.set(m_uB);
+                PB.mulLocal(-m_ratio*m_impulse);
 
                 vA.x += m_invMassA*PA.x;
                 vA.y += m_invMassA*PA.y;
@@ -320,8 +332,10 @@ namespace SharpBox2D.Dynamics.Joints
             float impulse = -m_mass*Cdot;
             m_impulse += impulse;
 
-            PA.set(m_uA).mulLocal(-impulse);
-            PB.set(m_uB).mulLocal(-m_ratio*impulse);
+            PA.set(m_uA);
+            PA.mulLocal(-impulse);
+            PB.set(m_uB);
+            PB.mulLocal(-m_ratio*impulse);
             vA.x += m_invMassA*PA.x;
             vA.y += m_invMassA*PA.y;
             wA += m_invIA*Vec2.cross(m_rA, PA);
@@ -358,11 +372,19 @@ namespace SharpBox2D.Dynamics.Joints
             qA.set(aA);
             qB.set(aB);
 
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp, ref rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref rB);
 
-            uA.set(cA).addLocal(rA).subLocal(m_groundAnchorA);
-            uB.set(cB).addLocal(rB).subLocal(m_groundAnchorB);
+            uA.set(cA);
+            uA.addLocal(rA);
+            uA.subLocal(m_groundAnchorA);
+            uB.set(cB);
+            uB.addLocal(rB);
+            uB.subLocal(m_groundAnchorB);
 
             float lengthA = uA.length();
             float lengthB = uB.length();
@@ -404,8 +426,10 @@ namespace SharpBox2D.Dynamics.Joints
 
             float impulse = -mass*C;
 
-            PA.set(uA).mulLocal(-impulse);
-            PB.set(uB).mulLocal(-m_ratio*impulse);
+            PA.set(uA);
+            PA.mulLocal(-impulse);
+            PB.set(uB);
+            PB.mulLocal(-m_ratio*impulse);
 
             cA.x += m_invMassA*PA.x;
             cA.y += m_invMassA*PA.y;

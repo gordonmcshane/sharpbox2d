@@ -78,7 +78,8 @@ namespace SharpBox2D.Dynamics.Joints
 
         public override void getReactionForce(float inv_dt, ref Vec2 v)
         {
-            v.set(m_linearImpulse).mulLocal(inv_dt);
+            v.set(m_linearImpulse);
+            v.mulLocal(inv_dt);
         }
 
         public override float getReactionTorque(float inv_dt)

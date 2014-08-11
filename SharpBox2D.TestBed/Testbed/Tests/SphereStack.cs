@@ -24,64 +24,76 @@
 /**
  * Created at 4:31:15 AM Jan 15, 2011
  */
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
+
 
 /**
  * @author Daniel Murphy
  */
-public class SphereStack extends TestbedTest {
 
-  int e_count = 10;
-
-  @Override
-  public boolean isSaveLoadEnabled() {
-    return true;
-  }
-
-  @Override
-  public void initTest(boolean deserialized) {
-    if (deserialized) {
-      return;
-    }
-    Body bodies[] = new Body[e_count];
+    public class SphereStack : TestbedTest
     {
-      BodyDef bd = new BodyDef();
-      Body ground = getWorld().createBody(bd);
 
-      EdgeShape shape = new EdgeShape();
-      shape.set(new Vec2(-40.0f, 0.0f), new Vec2(40.0f, 0.0f));
-      ground.createFixture(shape, 0.0f);
+        private int e_count = 10;
+
+
+        public override bool isSaveLoadEnabled()
+        {
+            return true;
+        }
+
+
+        public override void initTest(bool deserialized)
+        {
+            if (deserialized)
+            {
+                return;
+            }
+            Body[] bodies = new Body[e_count];
+            {
+                BodyDef bd = new BodyDef();
+                Body ground = getWorld().createBody(bd);
+
+                EdgeShape shape = new EdgeShape();
+                shape.set(new Vec2(-40.0f, 0.0f), new Vec2(40.0f, 0.0f));
+                ground.createFixture(shape, 0.0f);
+            }
+
+            {
+                CircleShape shape = new CircleShape();
+                shape.m_radius = 1.0f;
+
+                for (int i = 0; i < e_count; ++i)
+                {
+                    BodyDef bd = new BodyDef();
+                    bd.type = BodyType.DYNAMIC;
+                    bd.position.set(0.0f, 4.0f + 3.0f*i);
+
+                    bodies[i] = getWorld().createBody(bd);
+
+                    bodies[i].createFixture(shape, 1.0f);
+
+                    // m_bodies[i].setLinearVelocity(new Vec2(0.0f, -100.0f));
+                }
+            }
+        }
+
+
+        public override string getTestName()
+        {
+            return "Sphere Stack";
+        }
+
     }
-
-    {
-      CircleShape shape = new CircleShape();
-      shape.m_radius = 1.0f;
-
-      for (int i = 0; i < e_count; ++i) {
-        BodyDef bd = new BodyDef();
-        bd.type = BodyType.DYNAMIC;
-        bd.position.set(0.0f, 4.0f + 3.0f * i);
-
-        bodies[i] = getWorld().createBody(bd);
-
-        bodies[i].createFixture(shape, 1.0f);
-
-        // m_bodies[i].setLinearVelocity(new Vec2(0.0f, -100.0f));
-      }
-    }
-  }
-
-  @Override
-  public String getTestName() {
-    return "Sphere Stack";
-  }
-
 }

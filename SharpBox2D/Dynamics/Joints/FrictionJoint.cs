@@ -101,7 +101,8 @@ namespace SharpBox2D.Dynamics.Joints
 
         public override void getReactionForce(float inv_dt, ref Vec2 argOut)
         {
-            argOut.set(m_linearImpulse).mulLocal(inv_dt);
+            argOut.set(m_linearImpulse);
+            argOut.mulLocal(inv_dt);
         }
 
 
@@ -164,8 +165,13 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective mass matrix.
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref m_rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref m_rB);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+
+            Rot.mulToOutUnsafe(qA, temp, ref m_rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref m_rB);
 
             // J = [-I -r1_skew I r2_skew]
             // [ 0 -1 0 1]
@@ -202,11 +208,13 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 P = pool.popVec2();
                 P.set(m_linearImpulse);
 
-                temp.set(P).mulLocal(mA);
+                temp.set(P);
+                temp.mulLocal(mA);
                 vA.subLocal(temp);
                 wA -= iA*(Vec2.cross(m_rA, P) + m_angularImpulse);
 
-                temp.set(P).mulLocal(mB);
+                temp.set(P);
+                temp.mulLocal(mB);
                 vB.addLocal(temp);
                 wB += iB*(Vec2.cross(m_rB, P) + m_angularImpulse);
 
@@ -265,7 +273,9 @@ namespace SharpBox2D.Dynamics.Joints
 
                 Vec2.crossToOutUnsafe(wA, m_rA, ref temp);
                 Vec2.crossToOutUnsafe(wB, m_rB, ref Cdot);
-                Cdot.addLocal(vB).subLocal(vA).subLocal(temp);
+                Cdot.addLocal(vB);
+                Cdot.subLocal(vA);
+                Cdot.subLocal(temp);
 
                 Vec2 impulse = pool.popVec2();
                 Mat22.mulToOutUnsafe(m_linearMass, Cdot, ref impulse);
@@ -284,13 +294,16 @@ namespace SharpBox2D.Dynamics.Joints
                     m_linearImpulse.mulLocal(maxImpulse);
                 }
 
-                impulse.set(m_linearImpulse).subLocal(oldImpulse);
+                impulse.set(m_linearImpulse);
+                impulse.subLocal(oldImpulse);
 
-                temp.set(impulse).mulLocal(mA);
+                temp.set(impulse);
+                temp.mulLocal(mA);
                 vA.subLocal(temp);
                 wA -= iA*Vec2.cross(m_rA, impulse);
 
-                temp.set(impulse).mulLocal(mB);
+                temp.set(impulse);
+                temp.mulLocal(mB);
                 vB.addLocal(temp);
                 wB += iB*Vec2.cross(m_rB, impulse);
 

@@ -21,39 +21,45 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.jbox2d.testbed.framework;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
 
+namespace SharpBox2D.TestBed.Framework
+{
+    /**
+ * Whether the setting effects the engine's behavior or
+ * modifies drawing.
+ *
+ */
+    public enum SettingType
+    {
+        DRAWING, ENGINE
+    }
+
+    /**
+     * The type of value this setting pertains to
+     */
+    public enum ConstraintType
+    {
+        BOOLEAN, RANGE
+    }
+  
 /**
  * Defines a setting used in the testbed.
  * @author Daniel Murphy
  */
 public class TestbedSetting {
   
-  /**
-   * Whether the setting effects the engine's behavior or
-   * modifies drawing.
-   *
-   */
-  public static enum SettingType {
-    DRAWING, ENGINE
-  }
-  
-  /**
-   * The type of value this setting pertains to
-   */
-  public static enum ConstraintType {
-    BOOLEAN, RANGE
-  }
-  
-  public final String name;
-  public final SettingType settingsType;
-  public final ConstraintType constraintType;
-  public boolean enabled;
+
+  public  string name;
+  public  SettingType settingsType;
+  public  ConstraintType constraintType;
+  public bool enabled;
   public int value;
-  public final int min;
-  public final int max;
+  public  int min;
+  public  int max;
   
-  public TestbedSetting(String argName, SettingType argType, boolean argValue){
+  public TestbedSetting(string argName, SettingType argType, bool argValue){
     name = argName;
     settingsType = argType;
     enabled = argValue;
@@ -61,7 +67,7 @@ public class TestbedSetting {
     min = max = value = 0;
   }
   
-  public TestbedSetting(String argName, SettingType argType, int argValue, int argMinimum, int argMaximum){
+  public TestbedSetting(string argName, SettingType argType, int argValue, int argMinimum, int argMaximum){
     name = argName;
     settingsType = argType;
     value = argValue;
@@ -70,4 +76,5 @@ public class TestbedSetting {
     constraintType = ConstraintType.RANGE;
     enabled = false;
   }
+}
 }

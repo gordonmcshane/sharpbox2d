@@ -21,137 +21,149 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.FixtureDef;
-import org.jbox2d.testbed.framework.TestbedSettings;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
 
-public class ConfinedTest extends TestbedTest {
+    public class ConfinedTest : TestbedTest
+    {
 
-	int e_columnCount = 0;
-	int e_rowCount = 0;
-	
-	@Override
-	public boolean isSaveLoadEnabled() {
-	  return true;
-	}
-	
-	@Override
-	public String getTestName() {
-		return "Confined";
-	}
+        private int e_columnCount = 0;
+        private int e_rowCount = 0;
 
-	@Override
-	public void initTest(boolean argDeserialized) {
-	  if(argDeserialized){
-	    return;
-	  }
-		{
-			BodyDef bd = new BodyDef();
-			Body ground = getWorld().createBody(bd);
 
-			EdgeShape shape = new EdgeShape();
+        public override bool isSaveLoadEnabled()
+        {
+            return true;
+        }
 
-			// Floor
-			shape.set(new Vec2(-10.0f, 0.0f), new Vec2(10.0f, 0.0f));
-			ground.createFixture(shape, 0.0f);
 
-			// Left wall
-			shape.set(new Vec2(-10.0f, 0.0f), new Vec2(-10.0f, 20.0f));
-			ground.createFixture(shape, 0.0f);
+        public override string getTestName()
+        {
+            return "Confined";
+        }
 
-			// Right wall
-			shape.set(new Vec2(10.0f, 0.0f), new Vec2(10.0f, 20.0f));
-			ground.createFixture(shape, 0.0f);
 
-			// Roof
-			shape.set(new Vec2(-10.0f, 20.0f), new Vec2(10.0f, 20.0f));
-			ground.createFixture(shape, 0.0f);
-		}
+        public override void initTest(bool argDeserialized)
+        {
+            if (argDeserialized)
+            {
+                return;
+            }
+            {
+                BodyDef bd = new BodyDef();
+                Body ground = getWorld().createBody(bd);
 
-		float radius = 0.5f;
-		CircleShape shape = new CircleShape();
-		shape.m_p.setZero();
-		shape.m_radius = radius;
+                EdgeShape shape = new EdgeShape();
 
-		FixtureDef fd = new FixtureDef();
-		fd.shape = shape;
-		fd.density = 1.0f;
-		fd.friction = 0.1f;
+                // Floor
+                shape.set(new Vec2(-10.0f, 0.0f), new Vec2(10.0f, 0.0f));
+                ground.createFixture(shape, 0.0f);
 
-		for (int j = 0; j < e_columnCount; ++j)
-		{
-			for (int i = 0; i < e_rowCount; ++i)
-			{
-				BodyDef bd = new BodyDef();
-				bd.type = BodyType.DYNAMIC;
-				bd.position.set(-10.0f + (2.1f * j + 1.0f + 0.01f * i) * radius, (2.0f * i + 1.0f) * radius);
-				Body body = getWorld().createBody(bd);
+                // Left wall
+                shape.set(new Vec2(-10.0f, 0.0f), new Vec2(-10.0f, 20.0f));
+                ground.createFixture(shape, 0.0f);
 
-				body.createFixture(fd);
-			}
-		}
+                // Right wall
+                shape.set(new Vec2(10.0f, 0.0f), new Vec2(10.0f, 20.0f));
+                ground.createFixture(shape, 0.0f);
 
-		getWorld().setGravity(new Vec2(0.0f, 0.0f));
-	}
-	
-	public void createCircle()
-	{
-		float radius = 2.0f;
-		CircleShape shape = new CircleShape();
-		shape.m_p.setZero();
-		shape.m_radius = radius;
+                // Roof
+                shape.set(new Vec2(-10.0f, 20.0f), new Vec2(10.0f, 20.0f));
+                ground.createFixture(shape, 0.0f);
+            }
 
-		FixtureDef fd = new FixtureDef();
-		fd.shape = shape;
-		fd.density = 1.0f;
-		fd.friction = 0.0f;
+            float radius = 0.5f;
+            CircleShape shape2 = new CircleShape();
+            shape2.m_p.setZero();
+            shape2.m_radius = radius;
 
-		Vec2 p = new Vec2((float)Math.random(), 3.0f + (float)Math.random());
-		BodyDef bd = new BodyDef();
-		bd.type = BodyType.DYNAMIC;
-		bd.position = p;
-		//bd.allowSleep = false;
-		Body body = getWorld().createBody(bd);
+            FixtureDef fd = new FixtureDef();
+            fd.shape = shape2;
+            fd.density = 1.0f;
+            fd.friction = 0.1f;
 
-		body.createFixture(fd);
-	}
-	
-	@Override
-	public void step(TestbedSettings settings) {
+            for (int j = 0; j < e_columnCount; ++j)
+            {
+                for (int i = 0; i < e_rowCount; ++i)
+                {
+                    BodyDef bd = new BodyDef();
+                    bd.type = BodyType.DYNAMIC;
+                    bd.position.set(-10.0f + (2.1f*j + 1.0f + 0.01f*i)*radius, (2.0f*i + 1.0f)*radius);
+                    Body body = getWorld().createBody(bd);
 
-		super.step(settings);
+                    body.createFixture(fd);
+                }
+            }
 
-		for (Body b = getWorld().getBodyList(); b != null; b = b.getNext())
-		{
-			if (b.getType() != BodyType.DYNAMIC)
-			{
-				continue;
-			}
+            getWorld().setGravity(new Vec2(0.0f, 0.0f));
+        }
 
-			Vec2 p = b.getPosition();
-			if (p.x <= -10.0f || 10.0f <= p.x || p.y <= 0.0f || 20.0f <= p.y)
-			{
-				p.x += 0.0;
-			}
-		}
+        private Random _random = new Random();
 
-		addTextLine("Press 'c' to create a circle");
-	}
+        public void createCircle()
+        {
+            float radius = 2.0f;
+            CircleShape shape = new CircleShape();
+            shape.m_p.setZero();
+            shape.m_radius = radius;
 
-	@Override
-	public void keyPressed(char argKeyChar, int argKeyCode) {
-		switch(argKeyChar){
-		case 'c':
-			createCircle();
-			break;
-		}
-	}
+            FixtureDef fd = new FixtureDef();
+            fd.shape = shape;
+            fd.density = 1.0f;
+            fd.friction = 0.0f;
+
+            Vec2 p = new Vec2((float) _random.NextDouble(), 3.0f + (float) _random.NextDouble());
+            BodyDef bd = new BodyDef();
+            bd.type = BodyType.DYNAMIC;
+            bd.position = p;
+            //bd.allowSleep = false;
+            Body body = getWorld().createBody(bd);
+
+            body.createFixture(fd);
+        }
+
+
+        public override void step(TestbedSettings settings)
+        {
+
+            base.step(settings);
+
+            for (Body b = getWorld().getBodyList(); b != null; b = b.getNext())
+            {
+                if (b.getType() != BodyType.DYNAMIC)
+                {
+                    continue;
+                }
+
+                Vec2 p = b.getPosition();
+                if (p.x <= -10.0f || 10.0f <= p.x || p.y <= 0.0f || 20.0f <= p.y)
+                {
+                    p.x += 0.0f;
+                }
+            }
+
+            addTextLine("Press 'c' to create a circle");
+        }
+
+
+        public override void keyPressed(char argKeyChar, int argKeyCode)
+        {
+            switch (argKeyChar)
+            {
+                case 'c':
+                    createCircle();
+                    break;
+            }
+        }
+    }
 }

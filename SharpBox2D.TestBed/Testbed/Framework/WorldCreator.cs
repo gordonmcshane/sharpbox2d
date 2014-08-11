@@ -1,8 +1,10 @@
-package org.jbox2d.testbed.framework;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
 
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.World;
-
-public interface WorldCreator {
-  World createWorld(Vec2 gravity);
+namespace SharpBox2D.TestBed.Framework
+{
+    public interface WorldCreator
+    {
+        World createWorld(Vec2 gravity);
+    }
 }

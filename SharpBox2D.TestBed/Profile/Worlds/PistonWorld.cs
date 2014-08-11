@@ -62,8 +62,8 @@ namespace SharpBox2D.TestBed.Profile.Worlds
                     fd.density = 25;
                     fd.friction = .1f;
                     fd.restitution = .9f;
-                    float xPos = radius * (float) Math.Cos(2f * Math.PI * (i / (float) (numPieces)));
-                    float yPos = radius * (float) Math.Sin(2f * Math.PI * (i / (float) (numPieces)));
+                    float xPos = radius * (float) System.Math.Cos(2f * System.Math.PI * (i / (float) (numPieces)));
+                    float yPos = radius * (float) System.Math.Sin(2f * System.Math.PI * (i / (float) (numPieces)));
                     cd.m_p.set(xPos, yPos);
 
                     body.createFixture(fd);

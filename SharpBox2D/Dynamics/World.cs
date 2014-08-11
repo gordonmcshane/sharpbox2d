@@ -283,7 +283,7 @@ namespace SharpBox2D.Dynamics
             creator.push(contact);
         }
 
-        internal IWorldPool getPool()
+        public IWorldPool getPool()
         {
             return pool;
         }
@@ -729,7 +729,7 @@ namespace SharpBox2D.Dynamics
             }
         }
 
-        private Color3f color = new Color3f();
+        private Color4f color = new Color4f();
         private Transform xf = new Transform();
         private Vec2 cA = new Vec2();
         private Vec2 cB = new Vec2();
@@ -1221,7 +1221,7 @@ namespace SharpBox2D.Dynamics
             // Clear all the island flags.
             for (Body b = m_bodyList; b != null; b = b.m_next)
             {
-                b.m_flags &= ~Body.e_islandFlag;
+                b.m_flags &= ~BodyFlags.Island;
             }
             for (Contact c = m_contactManager.m_contactList; c != null; c = c.m_next)
             {
@@ -1240,7 +1240,7 @@ namespace SharpBox2D.Dynamics
             }
             for (Body seed = m_bodyList; seed != null; seed = seed.m_next)
             {
-                if ((seed.m_flags & Body.e_islandFlag) == Body.e_islandFlag)
+                if ((seed.m_flags & BodyFlags.Island) == BodyFlags.Island)
                 {
                     continue;
                 }
@@ -1260,7 +1260,7 @@ namespace SharpBox2D.Dynamics
                 island.clear();
                 int stackCount = 0;
                 stack[stackCount++] = seed;
-                seed.m_flags |= Body.e_islandFlag;
+                seed.m_flags |= BodyFlags.Island;
 
                 // Perform a depth first search (DFS) on the constraint graph.
                 while (stackCount > 0)
@@ -1311,14 +1311,14 @@ namespace SharpBox2D.Dynamics
                         Body other = ce.other;
 
                         // Was the other body already added to this island?
-                        if ((other.m_flags & Body.e_islandFlag) == Body.e_islandFlag)
+                        if ((other.m_flags & BodyFlags.Island) == BodyFlags.Island)
                         {
                             continue;
                         }
 
                         Debug.Assert(stackCount < stackSize);
                         stack[stackCount++] = other;
-                        other.m_flags |= Body.e_islandFlag;
+                        other.m_flags |= BodyFlags.Island;
                     }
 
                     // Search all joints connect to this body.
@@ -1340,14 +1340,14 @@ namespace SharpBox2D.Dynamics
                         island.add(je.joint);
                         je.joint.m_islandFlag = true;
 
-                        if ((other.m_flags & Body.e_islandFlag) == Body.e_islandFlag)
+                        if ((other.m_flags & BodyFlags.Island) == BodyFlags.Island)
                         {
                             continue;
                         }
 
                         Debug.Assert(stackCount < stackSize);
                         stack[stackCount++] = other;
-                        other.m_flags |= Body.e_islandFlag;
+                        other.m_flags |= BodyFlags.Island;
                     }
                 }
                 island.solve(m_profile, step, m_gravity, m_allowSleep);
@@ -1359,7 +1359,7 @@ namespace SharpBox2D.Dynamics
                     Body b = island.m_bodies[i];
                     if (b.getType() == BodyType.STATIC)
                     {
-                        b.m_flags &= ~Body.e_islandFlag;
+                        b.m_flags &= ~BodyFlags.Island;
                     }
                 }
             }
@@ -1372,7 +1372,7 @@ namespace SharpBox2D.Dynamics
             for (Body b = m_bodyList; b != null; b = b.getNext())
             {
                 // If a body was not in an island then it did not move.
-                if ((b.m_flags & Body.e_islandFlag) == 0)
+                if ((b.m_flags & BodyFlags.Island) == 0)
                 {
                     continue;
                 }
@@ -1409,7 +1409,7 @@ namespace SharpBox2D.Dynamics
             {
                 for (Body b = m_bodyList; b != null; b = b.m_next)
                 {
-                    b.m_flags &= ~Body.e_islandFlag;
+                    b.m_flags &= ~BodyFlags.Island;
                     b.m_sweep.alpha0 = 0.0f;
                 }
 
@@ -1587,8 +1587,8 @@ namespace SharpBox2D.Dynamics
                 island.add(bB);
                 island.add(minContact);
 
-                bA.m_flags |= Body.e_islandFlag;
-                bB.m_flags |= Body.e_islandFlag;
+                bA.m_flags |= BodyFlags.Island;
+                bB.m_flags |= BodyFlags.Island;
                 minContact.m_flags |= Contact.ISLAND_FLAG;
 
                 // Get contacts on bodyA and bodyB.
@@ -1637,7 +1637,7 @@ namespace SharpBox2D.Dynamics
 
                             // Tentatively advance the body to the TOI.
                             backup1.set(other.m_sweep);
-                            if ((other.m_flags & Body.e_islandFlag) == 0)
+                            if ((other.m_flags & BodyFlags.Island) == 0)
                             {
                                 other.advance(minAlpha);
                             }
@@ -1666,13 +1666,13 @@ namespace SharpBox2D.Dynamics
                             island.add(contact);
 
                             // Has the other body already been added to the island?
-                            if ((other.m_flags & Body.e_islandFlag) != 0)
+                            if ((other.m_flags & BodyFlags.Island) != 0)
                             {
                                 continue;
                             }
 
                             // Add the other body to the island.
-                            other.m_flags |= Body.e_islandFlag;
+                            other.m_flags |= BodyFlags.Island;
 
                             if (other.m_type != BodyType.STATIC)
                             {
@@ -1696,7 +1696,7 @@ namespace SharpBox2D.Dynamics
                 for (int i = 0; i < island.m_bodyCount; ++i)
                 {
                     Body body = island.m_bodies[i];
-                    body.m_flags &= ~Body.e_islandFlag;
+                    body.m_flags &= ~BodyFlags.Island;
 
                     if (body.m_type != BodyType.DYNAMIC)
                     {
@@ -1776,7 +1776,7 @@ namespace SharpBox2D.Dynamics
         private float averageLinearVel = -1;
         private Vec2 liquidOffset = new Vec2();
         private Vec2 circCenterMoved = new Vec2();
-        private Color3f liquidColor = new Color3f(.4f, .4f, 1f);
+        private Color4f liquidColor = new Color4f(.4f, .4f, 1f);
 
         private Vec2 center = new Vec2();
         private Vec2 axis = new Vec2();
@@ -1784,7 +1784,7 @@ namespace SharpBox2D.Dynamics
         private Vec2 v2 = new Vec2();
         private Vec2Array tlvertices = new Vec2Array();
 
-        private void drawShape(Fixture fixture, Transform xf, Color3f color, bool wireframe)
+        private void drawShape(Fixture fixture, Transform xf, Color4f color, bool wireframe)
         {
             switch (fixture.getType())
             {
@@ -1811,7 +1811,8 @@ namespace SharpBox2D.Dynamics
                             averageLinearVel = .98f*averageLinearVel + .02f*linVelLength;
                         }
                         liquidOffset.mulLocal(liquidLength/averageLinearVel/2);
-                        circCenterMoved.set(center).addLocal(liquidOffset);
+                        circCenterMoved.set(center);
+                        circCenterMoved.addLocal(liquidOffset);
                         center.subLocal(liquidOffset);
                         m_debugDraw.drawSegment(center, circCenterMoved, liquidColor);
                         return;
@@ -2350,8 +2351,11 @@ namespace SharpBox2D.Dynamics
             {
                 float fraction = output.fraction;
                 // Vec2 point = (1.0f - fraction) * input.p1 + fraction * input.p2;
-                temp.set(input.p2).mulLocal(fraction);
-                point.set(input.p1).mulLocal(1 - fraction).addLocal(temp);
+                temp.set(input.p2);
+                temp.mulLocal(fraction);
+                point.set(input.p1);
+                point.mulLocal(1 - fraction);
+                point.addLocal(temp);
                 return callback.reportFixture(fixture, point, output.normal, fraction);
             }
 

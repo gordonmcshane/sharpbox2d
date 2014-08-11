@@ -77,7 +77,7 @@
     <Compile Include="Collision\TimeOfImpact.cs" />
     <Compile Include="Collision\WorldManifold.cs" />
     <Compile Include="Common\BufferUtils.cs" />
-    <Compile Include="Common\Color3f.cs" />
+    <Compile Include="Common\Color4f.cs" />
     <Compile Include="Common\IViewportTransform.cs" />
     <Compile Include="Common\Mat22.cs" />
     <Compile Include="Common\Mat33.cs" />

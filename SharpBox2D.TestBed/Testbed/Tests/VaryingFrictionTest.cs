@@ -21,121 +21,131 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.FixtureDef;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
 
-public class VaryingFrictionTest extends TestbedTest {
 
-  @Override
-  public String getTestName() {
-    return "Varying Friction";
-  }
-
-  @Override
-  public boolean isSaveLoadEnabled() {
-    return true;
-  }
-
-  @Override
-  public void initTest(boolean deserialized) {
-    if (deserialized) {
-      return;
-    }
+    public class VaryingFrictionTest : TestbedTest
     {
-      BodyDef bd = new BodyDef();
-      Body ground = getWorld().createBody(bd);
 
-      EdgeShape shape = new EdgeShape();
-      shape.set(new Vec2(-40.0f, 0.0f), new Vec2(40.0f, 0.0f));
-      ground.createFixture(shape, 0.0f);
+
+        public override string getTestName()
+        {
+            return "Varying Friction";
+        }
+
+
+        public override bool isSaveLoadEnabled()
+        {
+            return true;
+        }
+
+
+        public override void initTest(bool deserialized)
+        {
+            if (deserialized)
+            {
+                return;
+            }
+            {
+                BodyDef bd = new BodyDef();
+                Body ground = getWorld().createBody(bd);
+
+                EdgeShape shape = new EdgeShape();
+                shape.set(new Vec2(-40.0f, 0.0f), new Vec2(40.0f, 0.0f));
+                ground.createFixture(shape, 0.0f);
+            }
+
+            {
+                PolygonShape shape2 = new PolygonShape();
+                shape2.setAsBox(13.0f, 0.25f);
+
+                BodyDef bd2 = new BodyDef();
+                bd2.position.set(-4.0f, 22.0f);
+                bd2.angle = -0.25f;
+
+                Body ground = getWorld().createBody(bd2);
+                ground.createFixture(shape2, 0.0f);
+            }
+
+            {
+                PolygonShape shape3 = new PolygonShape();
+                shape3.setAsBox(0.25f, 1.0f);
+
+                BodyDef bd3 = new BodyDef();
+                bd3.position.set(10.5f, 19.0f);
+
+                Body ground = getWorld().createBody(bd3);
+                ground.createFixture(shape3, 0.0f);
+            }
+
+            {
+                PolygonShape shape4 = new PolygonShape();
+                shape4.setAsBox(13.0f, 0.25f);
+
+                BodyDef bd4 = new BodyDef();
+                bd4.position.set(4.0f, 14.0f);
+                bd4.angle = 0.25f;
+
+                Body ground = getWorld().createBody(bd4);
+                ground.createFixture(shape4, 0.0f);
+            }
+
+            {
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(0.25f, 1.0f);
+
+                BodyDef bd = new BodyDef();
+                bd.position.set(-10.5f, 11.0f);
+
+                Body ground = getWorld().createBody(bd);
+                ground.createFixture(shape, 0.0f);
+            }
+
+            {
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(13.0f, 0.25f);
+
+                BodyDef bd = new BodyDef();
+                bd.position.set(-4.0f, 6.0f);
+                bd.angle = -0.25f;
+
+                Body ground = getWorld().createBody(bd);
+                ground.createFixture(shape, 0.0f);
+            }
+
+            {
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(0.5f, 0.5f);
+
+                FixtureDef fd = new FixtureDef();
+                fd.shape = shape;
+                fd.density = 25.0f;
+
+                float[] friction = {0.75f, 0.5f, 0.35f, 0.1f, 0.0f};
+
+                for (int i = 0; i < 5; ++i)
+                {
+                    BodyDef bd = new BodyDef();
+                    bd.type = BodyType.DYNAMIC;
+                    bd.position.set(-15.0f + 4.0f*i, 28.0f);
+                    Body body = getWorld().createBody(bd);
+
+                    fd.friction = friction[i];
+                    body.createFixture(fd);
+                }
+            }
+        }
+
     }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(13.0f, 0.25f);
-
-      BodyDef bd = new BodyDef();
-      bd.position.set(-4.0f, 22.0f);
-      bd.angle = -0.25f;
-
-      Body ground = getWorld().createBody(bd);
-      ground.createFixture(shape, 0.0f);
-    }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(0.25f, 1.0f);
-
-      BodyDef bd = new BodyDef();
-      bd.position.set(10.5f, 19.0f);
-
-      Body ground = getWorld().createBody(bd);
-      ground.createFixture(shape, 0.0f);
-    }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(13.0f, 0.25f);
-
-      BodyDef bd = new BodyDef();
-      bd.position.set(4.0f, 14.0f);
-      bd.angle = 0.25f;
-
-      Body ground = getWorld().createBody(bd);
-      ground.createFixture(shape, 0.0f);
-    }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(0.25f, 1.0f);
-
-      BodyDef bd = new BodyDef();
-      bd.position.set(-10.5f, 11.0f);
-
-      Body ground = getWorld().createBody(bd);
-      ground.createFixture(shape, 0.0f);
-    }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(13.0f, 0.25f);
-
-      BodyDef bd = new BodyDef();
-      bd.position.set(-4.0f, 6.0f);
-      bd.angle = -0.25f;
-
-      Body ground = getWorld().createBody(bd);
-      ground.createFixture(shape, 0.0f);
-    }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(0.5f, 0.5f);
-
-      FixtureDef fd = new FixtureDef();
-      fd.shape = shape;
-      fd.density = 25.0f;
-
-      float friction[] = { 0.75f, 0.5f, 0.35f, 0.1f, 0.0f };
-
-      for (int i = 0; i < 5; ++i) {
-        BodyDef bd = new BodyDef();
-        bd.type = BodyType.DYNAMIC;
-        bd.position.set(-15.0f + 4.0f * i, 28.0f);
-        Body body = getWorld().createBody(bd);
-
-        fd.friction = friction[i];
-        body.createFixture(fd);
-      }
-    }
-  }
-
 }

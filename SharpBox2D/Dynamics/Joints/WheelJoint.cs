@@ -141,8 +141,12 @@ namespace SharpBox2D.Dynamics.Joints
         public override void getReactionForce(float inv_dt, ref Vec2 argOut)
         {
             Vec2 temp = pool.popVec2();
-            temp.set(m_ay).mulLocal(m_impulse);
-            argOut.set(m_ax).mulLocal(m_springImpulse).addLocal(temp).mulLocal(inv_dt);
+            temp.set(m_ay);
+            temp.mulLocal(m_impulse);
+            argOut.set(m_ax);
+            argOut.mulLocal(m_springImpulse);
+            argOut.addLocal(temp);
+            argOut.mulLocal(inv_dt);
             pool.pushVec2(1);
         }
 
@@ -281,14 +285,23 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective masses.
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
-            d.set(cB).addLocal(rB).subLocal(cA).subLocal(rA);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp , ref rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref rB);
+            d.set(cB);
+            d.addLocal(rB);
+            d.subLocal(cA);
+            d.subLocal(rA);
 
             // Point to line constraint
             {
                 Rot.mulToOut(qA, m_localYAxisA, ref m_ay);
-                m_sAy = Vec2.cross(temp.set(d).addLocal(rA), m_ay);
+                temp.set(d);
+                temp.addLocal(rA);
+                m_sAy = Vec2.cross(temp, m_ay);
                 m_sBy = Vec2.cross(rB, m_ay);
 
                 m_mass = mA + mB + iA*m_sAy*m_sAy + iB*m_sBy*m_sBy;
@@ -306,7 +319,9 @@ namespace SharpBox2D.Dynamics.Joints
             if (m_frequencyHz > 0.0f)
             {
                 Rot.mulToOut(qA, m_localXAxisA, ref m_ax);
-                m_sAx = Vec2.cross(temp.set(d).addLocal(rA), m_ax);
+                temp.set(d);
+                temp.addLocal(rA);
+                m_sAx = Vec2.cross(temp, m_ax);
                 m_sBx = Vec2.cross(rB, m_ax);
 
                 float invMass = mA + mB + iA*m_sAx*m_sAx + iB*m_sBx*m_sBx;
@@ -416,7 +431,9 @@ namespace SharpBox2D.Dynamics.Joints
 
             // Solve spring constraint
             {
-                float Cdot = Vec2.dot(m_ax, temp.set(vB).subLocal(vA)) + m_sBx*wB - m_sAx*wA;
+                temp.set(vB);
+                temp.subLocal(vA);
+                float Cdot = Vec2.dot(m_ax, temp) + m_sBx*wB - m_sAx*wA;
                 float impulse = -m_springMass*(Cdot + m_bias + m_gamma*m_springImpulse);
                 m_springImpulse += impulse;
 
@@ -450,7 +467,9 @@ namespace SharpBox2D.Dynamics.Joints
 
             // Solve point to line constraint
             {
-                float Cdot = Vec2.dot(m_ay, temp.set(vB).subLocal(vA)) + m_sBy*wB - m_sAy*wA;
+                temp.set(vB);
+                temp.subLocal(vA);
+                float Cdot = Vec2.dot(m_ay, temp) + m_sBy*wB - m_sAy*wA;
                 float impulse = -m_mass*Cdot;
                 m_impulse += impulse;
 
@@ -489,15 +508,23 @@ namespace SharpBox2D.Dynamics.Joints
 
             qA.set(aA);
             qB.set(aB);
-
-            Rot.mulToOut(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOut(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
-            d.set(cB).subLocal(cA).addLocal(rB).subLocal(rA);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOut(qA, temp, ref rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOut(qB, temp , ref rB);
+            d.set(cB);
+            d.subLocal(cA);
+            d.addLocal(rB);
+            d.subLocal(rA);
 
             Vec2 ay = pool.popVec2();
             Rot.mulToOut(qA, m_localYAxisA, ref ay);
 
-            float sAy = Vec2.cross(temp.set(d).addLocal(rA), ay);
+            temp.set(d);
+            temp.addLocal(rA);
+            float sAy = Vec2.cross(temp, ay);
             float sBy = Vec2.cross(rB, ay);
 
             float C = Vec2.dot(d, ay);

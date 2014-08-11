@@ -203,8 +203,12 @@ namespace SharpBox2D.Collision.Shapes
                         continue;
                     }
 
-                    Vec2 r = pool1.set(ps[ie]).subLocal(ps[hull[m]]);
-                    Vec2 v = pool2.set(ps[j]).subLocal(ps[hull[m]]);
+                    Vec2 r = new Vec2(ps[ie]);
+                    r.subLocal(ps[hull[m]]);
+
+                    Vec2 v = new Vec2(ps[j]);
+                    v.subLocal(ps[hull[m]]);
+
                     float c = Vec2.cross(r, v);
                     if (c < 0.0f)
                     {
@@ -246,7 +250,8 @@ namespace SharpBox2D.Collision.Shapes
             {
                 int i1 = i;
                 int i2 = i + 1 < m_count ? i + 1 : 0;
-                edge.set(m_vertices[i2]).subLocal(m_vertices[i1]);
+                edge.set(m_vertices[i2]);
+                edge.subLocal(m_vertices[i1]);
 
                 Debug.Assert(edge.lengthSquared() > Settings.EPSILON*Settings.EPSILON);
                 Vec2.crossToOutUnsafe(edge, 1f, ref m_normals[i]);
@@ -585,8 +590,8 @@ namespace SharpBox2D.Collision.Shapes
                 Vec2 p2 = vs[i];
                 Vec2 p3 = i + 1 < count ? vs[i + 1] : vs[0];
 
-                e1.set(p2).subLocal(p1);
-                e2.set(p3).subLocal(p1);
+                e1.set(p2); e1.subLocal(p1);
+                e2.set(p3); e2.subLocal(p1);
 
                 float D = Vec2.cross(e1, e2);
 
@@ -594,7 +599,11 @@ namespace SharpBox2D.Collision.Shapes
                 area += triangleArea;
 
                 // Area weighted centroid
-                e1.set(p1).addLocal(p2).addLocal(p3).mulLocal(triangleArea*inv3);
+                e1.set(p1);
+                e1.addLocal(p2);
+                e1.addLocal(p3);
+                e1.mulLocal(triangleArea*inv3);
+
                 v.addLocal(e1);
             }
 
@@ -655,8 +664,11 @@ namespace SharpBox2D.Collision.Shapes
             for (int i = 0; i < m_count; ++i)
             {
                 // Triangle vertices.
-                e1.set(m_vertices[i]).subLocal(s);
-                e2.set(s).negateLocal().addLocal(i + 1 < m_count ? m_vertices[i + 1] : m_vertices[0]);
+                e1.set(m_vertices[i]);
+                e1.subLocal(s);
+                e2.set(s);
+                e2.negateLocal();
+                e2.addLocal(i + 1 < m_count ? m_vertices[i + 1] : m_vertices[0]);
 
                 float D = Vec2.cross(e1, e2);
 
@@ -682,7 +694,8 @@ namespace SharpBox2D.Collision.Shapes
             // Center of mass
             Debug.Assert(area > Settings.EPSILON);
             center.mulLocal(1.0f/area);
-            massData.center.set(center).addLocal(s);
+            massData.center.set(center);
+            massData.center.addLocal(s);
 
             // Inertia tensor relative to the local origin (point s)
             massData.I = I*density;
@@ -704,7 +717,8 @@ namespace SharpBox2D.Collision.Shapes
                 int i1 = i;
                 int i2 = i < m_count - 1 ? i1 + 1 : 0;
                 Vec2 p = m_vertices[i1];
-                Vec2 e = pool1.set(m_vertices[i2]).subLocal(p);
+                Vec2 e =new Vec2(m_vertices[i2]);
+                e.subLocal(p);
 
                 for (int j = 0; j < m_count; ++j)
                 {
@@ -713,7 +727,8 @@ namespace SharpBox2D.Collision.Shapes
                         continue;
                     }
 
-                    Vec2 v = pool2.set(m_vertices[j]).subLocal(p);
+                    Vec2 v = new Vec2(m_vertices[j]);
+                    v.subLocal(p);
                     float c = Vec2.cross(e, v);
                     if (c < 0.0f)
                     {

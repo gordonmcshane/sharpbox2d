@@ -24,66 +24,76 @@
 /**
  * Created at 1:59:32 PM Jan 23, 2011
  */
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.FixtureDef;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
 
 /**
  * @author Daniel Murphy
  */
-public class VaryingRestitution extends TestbedTest {
 
-  @Override
-  public boolean isSaveLoadEnabled() {
-    return true;
-  }
-
-  @Override
-  public void initTest(boolean deserialized) {
-    if (deserialized) {
-      return;
-    }
+    public class VaryingRestitution : TestbedTest
     {
-      BodyDef bd = new BodyDef();
-      Body ground = getWorld().createBody(bd);
 
-      EdgeShape shape = new EdgeShape();
-      shape.set(new Vec2(-40.0f, 0.0f), new Vec2(40.0f, 0.0f));
-      ground.createFixture(shape, 0.0f);
+
+        public override bool isSaveLoadEnabled()
+        {
+            return true;
+        }
+
+
+        public override void initTest(bool deserialized)
+        {
+            if (deserialized)
+            {
+                return;
+            }
+            {
+                BodyDef bd = new BodyDef();
+                Body ground = getWorld().createBody(bd);
+
+                EdgeShape shape = new EdgeShape();
+                shape.set(new Vec2(-40.0f, 0.0f), new Vec2(40.0f, 0.0f));
+                ground.createFixture(shape, 0.0f);
+            }
+
+            {
+                CircleShape shape = new CircleShape();
+                shape.m_radius = 1.0f;
+
+                FixtureDef fd = new FixtureDef();
+                fd.shape = shape;
+                fd.density = 1.0f;
+
+                float[] restitution = {0.0f, 0.1f, 0.3f, 0.5f, 0.75f, 0.9f, 1.0f};
+
+                for (int i = 0; i < 7; ++i)
+                {
+                    BodyDef bd = new BodyDef();
+                    bd.type = BodyType.DYNAMIC;
+                    bd.position.set(-10.0f + 3.0f*i, 20.0f);
+
+                    Body body = getWorld().createBody(bd);
+
+                    fd.restitution = restitution[i];
+                    body.createFixture(fd);
+                }
+            }
+        }
+
+
+        public override string getTestName()
+        {
+            return "Varying Restitution";
+        }
     }
-
-    {
-      CircleShape shape = new CircleShape();
-      shape.m_radius = 1.0f;
-
-      FixtureDef fd = new FixtureDef();
-      fd.shape = shape;
-      fd.density = 1.0f;
-
-      float restitution[] = {0.0f, 0.1f, 0.3f, 0.5f, 0.75f, 0.9f, 1.0f};
-
-      for (int i = 0; i < 7; ++i) {
-        BodyDef bd = new BodyDef();
-        bd.type = BodyType.DYNAMIC;
-        bd.position.set(-10.0f + 3.0f * i, 20.0f);
-
-        Body body = getWorld().createBody(bd);
-
-        fd.restitution = restitution[i];
-        body.createFixture(fd);
-      }
-    }
-  }
-
-  @Override
-  public String getTestName() {
-    return "Varying Restitution";
-  }
 }

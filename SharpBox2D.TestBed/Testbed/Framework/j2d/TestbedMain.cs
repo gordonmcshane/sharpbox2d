@@ -1,90 +1,265 @@
-/*******************************************************************************
- * Copyright (c) 2013, Daniel Murphy
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
-package org.jbox2d.testbed.framework.j2d;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+using System;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using SharpBox2D.Common;
+using SharpBox2D.TestBed.Testbed.Framework.j2d;
 
-import org.jbox2d.testbed.framework.TestList;
-import org.jbox2d.testbed.framework.TestbedController;
-import org.jbox2d.testbed.framework.TestbedController.MouseBehavior;
-import org.jbox2d.testbed.framework.TestbedController.UpdateBehavior;
-import org.jbox2d.testbed.framework.TestbedErrorHandler;
-import org.jbox2d.testbed.framework.TestbedModel;
+namespace SharpBox2D.TestBed.Framework.j2d
+{
+
+
+    public class MonoGameTestbedError : TestbedErrorHandler
+    {
+        public void serializationError(Exception e, string message)
+        {
+            Debug.WriteLine(message);
+        }
+    }
 
 /**
  * The entry point for the testbed application
  * 
  * @author Daniel Murphy
  */
-public class TestbedMain {
-  // private static final Logger log = LoggerFactory.getLogger(TestbedMain.class);
 
-  public static void main(String[] args) {
-    // try {
-    // UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-    // } catch (Exception e) {
-    // log.warn("Could not set the look and feel to nimbus.  "
-    // + "Hopefully you're on a mac so the window isn't ugly as crap.");
-    // }
-    TestbedModel model = new TestbedModel();
-    final TestbedController controller =
-        new TestbedController(model, UpdateBehavior.UPDATE_CALLED, MouseBehavior.NORMAL,
-            new TestbedErrorHandler() {
-              @Override
-              public void serializationError(Exception e, String message) {
-                JOptionPane.showMessageDialog(null, message, "Serialization Error",
-                    JOptionPane.ERROR_MESSAGE);
-              }
-            });
-    TestPanelJ2D panel = new TestPanelJ2D(model, controller);
-    model.setPanel(panel);
-    model.setDebugDraw(new DebugDrawJ2D(panel, true));
-    TestList.populateModel(model);
+    public static class TestbedMain
+    {
+        private static MonoGameDebugDraw _debugDraw;
+        // private static final Logger log = LoggerFactory.getLogger(TestbedMain.class);
 
-    JFrame testbed = new JFrame();
-    testbed.setTitle("JBox2D Testbed");
-    testbed.setLayout(new BorderLayout());
-    TestbedSidePanel side = new TestbedSidePanel(model, controller);
-    testbed.add((Component) panel, "Center");
-    testbed.add(new JScrollPane(side), "East");
-    testbed.pack();
-    testbed.setVisible(true);
-    testbed.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    System.out.println(System.getProperty("java.home"));
+        public static void Main(string[] args)
+        {
+            // try {
+            // UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+            // } catch (Exception e) {
+            // log.warn("Could not set the look and feel to nimbus.  "
+            // + "Hopefully you're on a mac so the window isn't ugly as crap.");
+            // }
+            TestbedModel model = new TestbedModel();
+            TestbedController controller = new TestbedController(model, UpdateBehavior.UPDATE_CALLED,
+                MouseBehavior.NORMAL, new MonoGameTestbedError());
 
-    SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        controller.playTest(0);
-        controller.start();
-      }
-    });
-  }
+            using (var game = new TestBedGame(model))
+            {
+               
+                game.Run();
+            }
+
+            //        ;
+            //        TestPanelJ2D panel = new TestPanelJ2D(model, controller);
+            //        model.setPanel(panel);
+            //        model.setDebugDraw(new DebugDrawJ2D(panel, true));
+            //        TestList.populateModel(model);
+
+            //        JFrame testbed = new JFrame();
+            //        testbed.setTitle("JBox2D Testbed");
+            //        testbed.setLayout(new BorderLayout());
+            //        TestbedSidePanel side = new TestbedSidePanel(model, controller);
+            //        testbed.add((Component) panel, "Center");
+            //        testbed.add(new JScrollPane(side), "East");
+            //        testbed.pack();
+            //        testbed.setVisible(true);
+            //        testbed.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            //        System.out.
+            //        println(System.getProperty("java.home"));
+
+            //        SwingUtilities.invokeLater(new Runnable()
+            //        {
+            //            @Override
+            //        public void run() {
+            //controller.playTest(0);
+            //controller.start();
+            //        }
+            //    }
+            //    )
+            //        ;
+            //    }
+        }
+    }
+
+    public class TestBedGame : Game, TestbedPanel
+    {
+        private TestbedController _controller;
+        private MonoGameDebugDraw _debugDraw;
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+        private TestbedModel _model;
+        private SpriteFont spriteFont;
+        private BasicEffect basicEffect;
+        private KeyboardState oldState;
+        private GamePadState oldGamePad;
+        private int width;
+        private int height;
+        private int tw;
+        private int th;
+        private float viewZoom = 1f;
+        private Vector2 viewCenter = new Vector2(0.0f, 20.0f);
+
+        public TestBedGame(TestbedModel model)
+        {
+            _model = model;
+            IsMouseVisible = true;
+            graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+        }
+
+        /// <summary>
+        /// Allows the game to perform any initialization it needs to before starting to run.
+        /// This is where it can query for any required services and load any non-graphic
+        /// related content.  Calling base.Initialize will enumerate through any components
+        /// and initialize them as well.
+        /// </summary>
+        protected override void Initialize()
+        {
+            // TODO: Add your initialization logic here
+
+            base.Initialize();
+        }
+
+        /// <summary>
+        /// LoadContent will be called once per game and is the place to load
+        /// all of your content.
+        /// </summary>
+        protected override void LoadContent()
+        {
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            //spriteFont = Content.Load<SpriteFont>("font");
+            basicEffect = new BasicEffect(GraphicsDevice);
+            basicEffect.VertexColorEnabled = true;
+
+            MonoGameDebugDraw._batch = spriteBatch;
+            MonoGameDebugDraw._device = GraphicsDevice;
+            MonoGameDebugDraw._font = spriteFont;
+
+            oldState = Keyboard.GetState();
+            oldGamePad = GamePad.GetState(PlayerIndex.One);
+            
+       
+
+            // Create a new SpriteBatch, which can be used to draw textures.
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            _model.setPanel(this);
+            _controller = new TestbedController(_model, UpdateBehavior.UPDATE_CALLED, MouseBehavior.NORMAL, new MonoGameTestbedError());
+           
+          
+            _debugDraw = new MonoGameDebugDraw();
+            _model.setDebugDraw(_debugDraw);
+            TestList.populateModel(_model);
+
+            _controller.playTest(7);
+            _controller.start();
+
+            Resize(GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight);
+
+        }
+
+        /// <summary>
+        /// UnloadContent will be called once per game and is the place to unload
+        /// all content.
+        /// </summary>
+        protected override void UnloadContent()
+        {
+            // TODO: Unload any non ContentManager content here
+        }
+
+        /// <summary>
+        /// Allows the game to run logic such as updating the world,
+        /// checking for collisions, gathering input, and playing audio.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Update(GameTime gameTime)
+        {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
+
+            base.Update(gameTime);
+            //Keyboard.GetState().IsKeyDown(Keys.Space)
+            //    _controller.playTest(_controller.t);
+            _controller.Update();
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Draw(GameTime gameTime)
+        {
+            base.Draw(gameTime);
+
+            GraphicsDevice.Clear(Color.Black);
+
+            basicEffect.Techniques[0].Passes[0].Apply();
+
+            
+            
+            _debugDraw.FinishDrawShapes();
+
+            
+            spriteBatch.Begin();
+            //_debugDraw.FinishDrawString();
+            spriteBatch.End();
+
+            
+        }
+
+        public void grabFocus()
+        {
+            
+        }
+
+        public bool render()
+        {
+            return true;
+        }
+
+        public void paintScreen()
+        {
+            
+        }
+
+        void Resize(int w, int h)
+        {
+            width = w;
+            height = h;
+
+            tw = GraphicsDevice.Viewport.Width;
+            th = GraphicsDevice.Viewport.Height;
+            int x = GraphicsDevice.Viewport.X;
+            int y = GraphicsDevice.Viewport.Y;
+
+            float ratio = (float)tw / (float)th;
+
+            Vector2 extents = new Vector2(ratio * 25.0f, 25.0f);
+            extents *= viewZoom;
+
+            Vector2 lower = viewCenter - extents;
+            Vector2 upper = viewCenter + extents;
+
+            // L/R/B/T
+            basicEffect.Projection = Matrix.CreateOrthographicOffCenter(lower.X, upper.X, lower.Y, upper.Y, -1, 1);
+        }
+
+        Vector2 ConvertScreenToWorld(int x, int y)
+        {
+            float u = x / (float)tw;
+            float v = (th - y) / (float)th;
+
+            float ratio = (float)tw / (float)th;
+            Vector2 extents = new Vector2(ratio * 25.0f, 25.0f);
+            extents *= viewZoom;
+
+            Vector2 lower = viewCenter - extents;
+            Vector2 upper = viewCenter + extents;
+
+            Vector2 p = new Vector2();
+            p.X = (1.0f - u) * lower.X + u * upper.X;
+            p.Y = (1.0f - v) * lower.Y + v * upper.Y;
+            return p;
+        }
+    }
 }

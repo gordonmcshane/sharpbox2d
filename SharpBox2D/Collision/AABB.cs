@@ -247,7 +247,8 @@ namespace SharpBox2D.Collision
             Vec2 normal = argPool.popVec2();
 
             p.set(input.p1);
-            d.set(input.p2).subLocal(input.p1);
+            d.set(input.p2);
+            d.subLocal(input.p1);
             Vec2.absToOut(d, ref absD);
 
             // x then y

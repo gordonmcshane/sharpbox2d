@@ -21,24 +21,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.jbox2d.testbed.framework;
 
-import java.awt.event.KeyEvent;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.LinkedList;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
 
-import org.jbox2d.common.IViewportTransform;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.World;
-import org.jbox2d.serialization.SerializationResult;
-import org.jbox2d.serialization.UnsupportedObjectException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+namespace SharpBox2D.TestBed.Framework
+{
 
-import com.google.common.collect.Lists;
+    public enum UpdateBehavior
+    {
+        UPDATE_CALLED,
+        UPDATE_IGNORED
+    }
+
+    public enum MouseBehavior
+    {
+        NORMAL,
+        FORCE_Y_FLIP
+    }
 
 /**
  * This class contains most control logic for the testbed and the update loop. It also watches the
@@ -46,468 +51,628 @@ import com.google.common.collect.Lists;
  * 
  * @author Daniel Murphy
  */
-public class TestbedController implements Runnable {
-  private static final Logger log = LoggerFactory.getLogger(TestbedController.class);
 
-  public static enum UpdateBehavior {
-    UPDATE_CALLED, UPDATE_IGNORED
-  }
+    public class TestbedController : TestbedModel.TestChangedListener
+    {
 
-  public static enum MouseBehavior {
-    NORMAL, FORCE_Y_FLIP
-  }
 
-  public static final int DEFAULT_FPS = 60;
+        public static readonly int DEFAULT_FPS = 60;
 
-  private TestbedTest currTest = null;
-  private TestbedTest nextTest = null;
+        private TestbedTest _currTest = null;
+        private TestbedTest _nextTest = null;
 
-  private long startTime;
-  private long frameCount;
-  private int targetFrameRate;
-  private float frameRate = 0;
-  private boolean animating = false;
-  private Thread animator;
+        private long startTime;
+        private long frameCount;
+        private int targetFrameRate;
+        private float frameRate = 0;
+        private bool animating = false;
+        //private Thread animator;
 
-  private final TestbedModel model;
+        private TestbedModel model;
 
-  private boolean savePending, loadPending, resetPending = false;
+        private bool savePending, loadPending, resetPending = false;
 
-  private final UpdateBehavior updateBehavior;
-  private final MouseBehavior mouseBehavior;
+        private UpdateBehavior updateBehavior;
+        private MouseBehavior mouseBehavior;
 
-  private final LinkedList<QueueItem> inputQueue;
-  private final TestbedErrorHandler errorHandler;
+        private LinkedList<QueueItem> inputQueue;
+        private TestbedErrorHandler errorHandler;
 
-  private float viewportHalfHeight;
-  private float viewportHalfWidth;
+        private float viewportHalfHeight;
+        private float viewportHalfWidth;
+        private object _lock = new object();
 
-  public TestbedController(TestbedModel argModel, UpdateBehavior behavior,
-      MouseBehavior mouseBehavior, TestbedErrorHandler errorHandler) {
-    model = argModel;
-    inputQueue = Lists.newLinkedList();
-    setFrameRate(DEFAULT_FPS);
-    animator = new Thread(this, "Testbed");
-    updateBehavior = behavior;
-    this.errorHandler = errorHandler;
-    this.mouseBehavior = mouseBehavior;
-    addListeners();
-  }
+        public TestbedController(TestbedModel argModel, UpdateBehavior behavior,
+            MouseBehavior mouseBehavior, TestbedErrorHandler errorHandler)
+        {
+            model = argModel;
+            inputQueue = new LinkedList<QueueItem>();
+            setFrameRate(DEFAULT_FPS);
+            //animator = new Thread(s => run());
+            updateBehavior = behavior;
+            this.errorHandler = errorHandler;
+            this.mouseBehavior = mouseBehavior;
+            addListeners();
+        }
 
-  private void addListeners() {
-    // time for our controlling
-    model.addTestChangeListener(new TestbedModel.TestChangedListener() {
-      @Override
-      public void testChanged(TestbedTest test, int index) {
-        model.getPanel().grabFocus();
-        nextTest = test;
-      }
-    });
-  }
+        public void testChanged(TestbedTest test, int index)
+        {
+            model.getPanel().grabFocus();
+            _nextTest = test;
+        }
 
-  public void load() {
-    loadPending = true;
-  }
+        private void addListeners()
+        {
+            // time for our controlling
+            model.addTestChangeListener(this);
 
-  public void save() {
-    savePending = true;
-  }
+        }
 
-  public void reset() {
-    resetPending = true;
-  }
+        public void load()
+        {
+            loadPending = true;
+        }
 
-  public void queueLaunchBomb() {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem());
-    }
-  }
+        public void save()
+        {
+            savePending = true;
+        }
 
-  public void queuePause() {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem(QueueItemType.Pause));
-    }
-  }
+        public void reset()
+        {
+            resetPending = true;
+        }
 
-  public void queueMouseUp(Vec2 screenPos, int button) {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem(QueueItemType.MouseUp, screenPos, button));
-    }
-  }
+        public void queueLaunchBomb()
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem());
+            }
+        }
 
-  public void queueMouseDown(Vec2 screenPos, int button) {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem(QueueItemType.MouseDown, screenPos, button));
-    }
-  }
+        public void queuePause()
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem(QueueItemType.Pause));
+            }
+        }
 
-  public void queueMouseMove(Vec2 screenPos) {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem(QueueItemType.MouseMove, screenPos, 0));
-    }
-  }
+        public void queueMouseUp(Vec2 screenPos, int button)
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem(QueueItemType.MouseUp, screenPos, button));
+            }
+        }
 
-  public void queueMouseDrag(Vec2 screenPos, int button) {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem(QueueItemType.MouseDrag, screenPos, button));
-    }
-  }
+        public void queueMouseDown(Vec2 screenPos, int button)
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem(QueueItemType.MouseDown, screenPos, button));
+            }
+        }
 
-  public void queueKeyPressed(char c, int code) {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem(QueueItemType.KeyPressed, c, code));
-    }
-  }
+        public void queueMouseMove(Vec2 screenPos)
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem(QueueItemType.MouseMove, screenPos, 0));
+            }
+        }
 
-  public void queueKeyReleased(char c, int code) {
-    synchronized (inputQueue) {
-      inputQueue.add(new QueueItem(QueueItemType.KeyReleased, c, code));
-    }
-  }
+        public void queueMouseDrag(Vec2 screenPos, int button)
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem(QueueItemType.MouseDrag, screenPos, button));
+            }
+        }
 
-  public void updateExtents(float halfWidth, float halfHeight) {
-    viewportHalfHeight = halfHeight;
-    viewportHalfWidth = halfWidth;
+        public void queueKeyPressed(char c, int code)
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem(QueueItemType.KeyPressed, c, code));
+            }
+        }
 
-    if (currTest != null) {
-      currTest.getCamera().getTransform().setExtents(halfWidth, halfHeight);
-    }
-  }
+        public void queueKeyReleased(char c, int code)
+        {
+            lock (inputQueue)
+            {
+                inputQueue.AddLast(new QueueItem(QueueItemType.KeyReleased, c, code));
+            }
+        }
 
-  protected void loopInit() {
-    model.getPanel().grabFocus();
+        public void updateExtents(float halfWidth, float halfHeight)
+        {
+            viewportHalfHeight = halfHeight;
+            viewportHalfWidth = halfWidth;
 
-    if (currTest != null) {
-      currTest.init(model);
-    }
-  }
+            if (_currTest != null)
+            {
+                _currTest.getCamera().getTransform().setExtents(halfWidth, halfHeight);
+            }
+        }
 
-  private void initTest(TestbedTest test) {
-    test.init(model);
-    test.getCamera().getTransform().setExtents(viewportHalfWidth, viewportHalfHeight);
-    model.getPanel().grabFocus();
-  }
+        protected void loopInit()
+        {
+            model.getPanel().grabFocus();
 
-  /**
+            if (_currTest != null)
+            {
+                _currTest.init(model);
+            }
+        }
+
+        private void initTest(TestbedTest test)
+        {
+            test.init(model);
+            test.getCamera().getTransform().setExtents(viewportHalfWidth, viewportHalfHeight);
+            model.getPanel().grabFocus();
+        }
+
+        /**
    * Called by the main run loop. If the update behavior is set to
    * {@link UpdateBehavior#UPDATE_IGNORED}, then this needs to be called manually to update the input
    * and test.
    */
-  public void updateTest() {
-    if (resetPending) {
-      if (currTest != null) {
-        currTest.init(model);
-      }
-      resetPending = false;
-      model.getPanel().grabFocus();
-    }
-    if (savePending) {
-      if (currTest != null) {
-        _save();
-      }
-      savePending = false;
-      model.getPanel().grabFocus();
-    }
-    if (loadPending) {
-      if (currTest != null) {
-        _load();
-      }
-      loadPending = false;
-      model.getPanel().grabFocus();
-    }
 
-    if (currTest == null) {
-      synchronized (inputQueue) {
-        inputQueue.clear();
-        return;
-      }
-    }
-    IViewportTransform transform = currTest.getCamera().getTransform();
-    // process our input
-    while (!inputQueue.isEmpty()) {
-      QueueItem i = null;
-      synchronized (inputQueue) {
-        if (!inputQueue.isEmpty()) {
-          i = inputQueue.pop();
+        public void updateTest()
+        {
+            if (resetPending)
+            {
+                if (_currTest != null)
+                {
+                    _currTest.init(model);
+                }
+                resetPending = false;
+                model.getPanel().grabFocus();
+            }
+            if (savePending)
+            {
+                if (_currTest != null)
+                {
+                   // _save();
+                }
+                savePending = false;
+                model.getPanel().grabFocus();
+            }
+            if (loadPending)
+            {
+                if (_currTest != null)
+                {
+                    //_load();
+                }
+                loadPending = false;
+                model.getPanel().grabFocus();
+            }
+
+            if (_currTest == null)
+            {
+                lock (inputQueue)
+                {
+                    inputQueue.Clear();
+                    return;
+                }
+            }
+            IViewportTransform transform = _currTest.getCamera().getTransform();
+            // process our input
+            while (inputQueue.Count != 0)
+            {
+                QueueItem i = null;
+                lock (inputQueue)
+                {
+                    if (inputQueue.Count != 0)
+                    {
+                        i = inputQueue.First.Value;
+                        inputQueue.RemoveFirst();
+                    }
+                }
+                if (i == null)
+                {
+                    continue;
+                }
+                bool oldFlip = transform.isYFlip();
+                if (mouseBehavior == MouseBehavior.FORCE_Y_FLIP)
+                {
+                    transform.setYFlip(true);
+                }
+                _currTest.getCamera().getTransform().getScreenToWorld(i.p, i.p);
+                if (mouseBehavior == MouseBehavior.FORCE_Y_FLIP)
+                {
+                    transform.setYFlip(oldFlip);
+                }
+                switch (i.type)
+                {
+                    case QueueItemType.KeyPressed:
+
+                        model.getKeys()[i.c] = true;
+
+                        model.getCodedKeys()[i.code] = true;
+                        _currTest.keyPressed(i.c, i.code);
+                        break;
+                    case QueueItemType.KeyReleased:
+
+                        model.getKeys()[i.c] = false;
+
+                        model.getCodedKeys()[i.code] = false;
+                        _currTest.keyReleased(i.c, i.code);
+                        break;
+                    case QueueItemType.MouseDown:
+                        _currTest.mouseDown(i.p, i.button);
+                        break;
+                    case QueueItemType.MouseMove:
+                        _currTest.mouseMove(i.p);
+                        break;
+                    case QueueItemType.MouseUp:
+                        _currTest.mouseUp(i.p, i.button);
+                        break;
+                    case QueueItemType.MouseDrag:
+                        _currTest.mouseDrag(i.p, i.button);
+                        break;
+                    case QueueItemType.LaunchBomb:
+                        _currTest.lanchBomb();
+                        break;
+                    case QueueItemType.Pause:
+                        model.getSettings().pause = !model.getSettings().pause;
+                        break;
+                }
+            }
+
+            if (_currTest != null)
+            {
+                _currTest.step(model.getSettings());
+            }
         }
-      }
-      if (i == null) {
-        continue;
-      }
-      boolean oldFlip = transform.isYFlip();
-      if (mouseBehavior == MouseBehavior.FORCE_Y_FLIP) {
-        transform.setYFlip(true);
-      }
-      currTest.getCamera().getTransform().getScreenToWorld(i.p, i.p);
-      if (mouseBehavior == MouseBehavior.FORCE_Y_FLIP) {
-        transform.setYFlip(oldFlip);
-      }
-      switch (i.type) {
-        case KeyPressed:
-          if (i.c != KeyEvent.CHAR_UNDEFINED) {
-            model.getKeys()[i.c] = true;
-          }
-          model.getCodedKeys()[i.code] = true;
-          currTest.keyPressed(i.c, i.code);
-          break;
-        case KeyReleased:
-          if (i.c != KeyEvent.CHAR_UNDEFINED) {
-            model.getKeys()[i.c] = false;
-          }
-          model.getCodedKeys()[i.code] = false;
-          currTest.keyReleased(i.c, i.code);
-          break;
-        case MouseDown:
-          currTest.mouseDown(i.p, i.button);
-          break;
-        case MouseMove:
-          currTest.mouseMove(i.p);
-          break;
-        case MouseUp:
-          currTest.mouseUp(i.p, i.button);
-          break;
-        case MouseDrag:
-          currTest.mouseDrag(i.p, i.button);
-          break;
-        case LaunchBomb:
-          currTest.lanchBomb();
-          break;
-        case Pause:
-          model.getSettings().pause = !model.getSettings().pause;
-          break;
-      }
-    }
 
-    if (currTest != null) {
-      currTest.step(model.getSettings());
-    }
-  }
+        public void nextTest()
+        {
+            int index = model.getCurrTestIndex() + 1;
+            index %= model.getTestsSize();
 
-  public void nextTest() {
-    int index = model.getCurrTestIndex() + 1;
-    index %= model.getTestsSize();
-
-    while (!model.isTestAt(index) && index < model.getTestsSize() - 1) {
-      index++;
-    }
-    if (model.isTestAt(index)) {
-      model.setCurrTestIndex(index);
-    }
-  }
-
-  public void lastTest() {
-    int index = model.getCurrTestIndex() - 1;
-
-    while (index >= 0 && !model.isTestAt(index)) {
-      if (index == 0) {
-        index = model.getTestsSize() - 1;
-      } else {
-        index--;
-      }
-    }
-    
-    if (model.isTestAt(index)) {
-      model.setCurrTestIndex(index);
-    }
-  }
-
-  public void playTest(int argIndex) {
-    if (argIndex == -1) {
-      return;
-    }
-    while (!model.isTestAt(argIndex)) {
-      if (argIndex + 1 < model.getTestsSize()) {
-        argIndex++;
-      } else {
-        return;
-      }
-    }
-    model.setCurrTestIndex(argIndex);
-  }
-
-  public void setFrameRate(int fps) {
-    if (fps <= 0) {
-      throw new IllegalArgumentException("Fps cannot be less than or equal to zero");
-    }
-    targetFrameRate = fps;
-    frameRate = fps;
-  }
-
-  public int getFrameRate() {
-    return targetFrameRate;
-  }
-
-  public float getCalculatedFrameRate() {
-    return frameRate;
-  }
-
-  public long getStartTime() {
-    return startTime;
-  }
-
-  public long getFrameCount() {
-    return frameCount;
-  }
-
-  public boolean isAnimating() {
-    return animating;
-  }
-
-  public synchronized void start() {
-    if (animating != true) {
-      frameCount = 0;
-      animator.start();
-    } else {
-      log.warn("Animation is already animating.");
-    }
-  }
-
-  public synchronized void stop() {
-    animating = false;
-  }
-
-  public void run() {
-    long beforeTime, afterTime, updateTime, timeDiff, sleepTime, timeSpent;
-    float timeInSecs;
-    beforeTime = startTime = updateTime = System.nanoTime();
-    sleepTime = 0;
-
-    animating = true;
-    loopInit();
-    while (animating) {
-
-      if (nextTest != null) {
-        initTest(nextTest);
-        model.setRunningTest(nextTest);
-        if (currTest != null) {
-          currTest.exit();
+            while (!model.isTestAt(index) && index < model.getTestsSize() - 1)
+            {
+                index++;
+            }
+            if (model.isTestAt(index))
+            {
+                model.setCurrTestIndex(index);
+            }
         }
-        currTest = nextTest;
-        nextTest = null;
-      }
 
-      timeSpent = beforeTime - updateTime;
-      if (timeSpent > 0) {
-        timeInSecs = timeSpent * 1.0f / 1000000000.0f;
-        updateTime = System.nanoTime();
-        frameRate = (frameRate * 0.9f) + (1.0f / timeInSecs) * 0.1f;
-        model.setCalculatedFps(frameRate);
-      } else {
-        updateTime = System.nanoTime();
-      }
-      TestbedPanel panel = model.getPanel();
+        public void lastTest()
+        {
+            int index = model.getCurrTestIndex() - 1;
 
-      if (panel.render()) {
-        if (currTest != null && updateBehavior == UpdateBehavior.UPDATE_CALLED) {
-          updateTest();
+            while (index >= 0 && !model.isTestAt(index))
+            {
+                if (index == 0)
+                {
+                    index = model.getTestsSize() - 1;
+                }
+                else
+                {
+                    index--;
+                }
+            }
+
+            if (model.isTestAt(index))
+            {
+                model.setCurrTestIndex(index);
+            }
         }
-        panel.paintScreen();
-      }
-      frameCount++;
 
-      afterTime = System.nanoTime();
+        public void playTest(int argIndex)
+        {
+            if (argIndex == -1)
+            {
+                return;
+            }
+            while (!model.isTestAt(argIndex))
+            {
+                if (argIndex + 1 < model.getTestsSize())
+                {
+                    argIndex++;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            model.setCurrTestIndex(argIndex);
+        }
 
-      timeDiff = afterTime - beforeTime;
-      sleepTime = (1000000000 / targetFrameRate - timeDiff) / 1000000;
-      if (sleepTime > 0) {
-        try {
-          Thread.sleep(sleepTime);
-        } catch (InterruptedException ex) {}
-      }
+        public void setFrameRate(int fps)
+        {
+            if (fps <= 0)
+            {
+                throw new ArgumentException("Fps cannot be less than or equal to zero");
+            }
+            targetFrameRate = fps;
+            frameRate = fps;
+        }
 
-      beforeTime = System.nanoTime();
-    } // end of run loop
-  }
+        public int getFrameRate()
+        {
+            return targetFrameRate;
+        }
+
+        public float getCalculatedFrameRate()
+        {
+            return frameRate;
+        }
+
+        public long getStartTime()
+        {
+            return startTime;
+        }
+
+        public long getFrameCount()
+        {
+            return frameCount;
+        }
+
+        public bool isAnimating()
+        {
+            return animating;
+        }
+
+        public void start()
+        {
+            lock (_lock)
+            {
+                if (animating != true)
+                {
+                    beforeTime = startTime = updateTime = Stopwatch.GetTimestamp();
+
+                    loopInit();
+                    animating = true;
+                    frameCount = 0;
+                }
+                else
+                {
+                    Debug.WriteLine("Animation is already animating.");
+                }
+            }
+        }
+
+        private void stop()
+        {
+            lock (_lock)
+            {
+                animating = false;
+            }
+        }
 
 
-  private void _save() {
-    SerializationResult result;
-    try {
-      result = currTest.getSerializer().serialize(currTest.getWorld());
-    } catch (UnsupportedObjectException e1) {
-      log.error("Error serializing world", e1);
-      if (errorHandler != null)
-        errorHandler.serializationError(e1, "Error serializing the object: " + e1.toString());
-      return;
+        long beforeTime, afterTime, updateTime, timeDiff, sleepTime, timeSpent;
+            float timeInSecs;
+            
+
+        public void Update()
+        {
+            if (animating)
+            {
+                if (_nextTest != null)
+                {
+                    initTest(_nextTest);
+                    model.setRunningTest(_nextTest);
+                    if (_currTest != null)
+                    {
+                        _currTest.exit();
+                    }
+                    _currTest = _nextTest;
+                    _nextTest = null;
+                }
+
+                timeSpent = beforeTime - updateTime;
+                if (timeSpent > 0)
+                {
+                    timeInSecs = timeSpent * 1.0f / 1000000000.0f;
+                    updateTime = Stopwatch.GetTimestamp();
+                    frameRate = (frameRate * 0.9f) + (1.0f / timeInSecs) * 0.1f;
+                    model.setCalculatedFps(frameRate);
+                }
+                else
+                {
+                    updateTime = Stopwatch.GetTimestamp();
+                }
+
+                if (_currTest != null && updateBehavior == UpdateBehavior.UPDATE_CALLED)
+                {
+                    updateTest();
+                }
+
+
+                frameCount++;
+
+                afterTime = Stopwatch.GetTimestamp();
+
+                timeDiff = afterTime - beforeTime;
+                sleepTime = (1000000000 / targetFrameRate - timeDiff) / 1000000;
+                //if (sleepTime > 0)
+                //{
+                //    Thread.Sleep(TimeSpan.FromMilliseconds(sleepTime));
+                //}
+
+                beforeTime = Stopwatch.GetTimestamp();
+            }
+        }
+
+        public void Draw()
+        {
+            if (animating)
+            {
+                
+            }
+        }
+
+        //public void run()
+        //{
+            
+        //    sleepTime = 0;
+
+        //    animating = true;
+        //    loopInit();
+        //    while (animating)
+        //    {
+
+        //        if (_nextTest != null)
+        //        {
+        //            initTest(_nextTest);
+        //            model.setRunningTest(_nextTest);
+        //            if (_currTest != null)
+        //            {
+        //                _currTest.exit();
+        //            }
+        //            _currTest = _nextTest;
+        //            _nextTest = null;
+        //        }
+
+        //        timeSpent = beforeTime - updateTime;
+        //        if (timeSpent > 0)
+        //        {
+        //            timeInSecs = timeSpent*1.0f/1000000000.0f;
+        //            updateTime = Stopwatch.GetTimestamp();
+        //            frameRate = (frameRate*0.9f) + (1.0f/timeInSecs)*0.1f;
+        //            model.setCalculatedFps(frameRate);
+        //        }
+        //        else
+        //        {
+        //            updateTime = Stopwatch.GetTimestamp();
+        //        }
+        //        TestbedPanel panel = model.getPanel();
+
+        //        if (panel.render())
+        //        {
+        //            if (_currTest != null && updateBehavior == UpdateBehavior.UPDATE_CALLED)
+        //            {
+        //                updateTest();
+        //            }
+        //            panel.paintScreen();
+        //        }
+        //        frameCount++;
+
+        //        afterTime = Stopwatch.GetTimestamp();
+
+        //        timeDiff = afterTime - beforeTime;
+        //        sleepTime = (1000000000/targetFrameRate - timeDiff)/1000000;
+        //        if (sleepTime > 0)
+        //        {
+        //            Thread.Sleep(TimeSpan.FromMilliseconds(sleepTime));
+        //        }
+
+        //        beforeTime = Stopwatch.GetTimestamp();
+        //    } // end of run loop
+        //}
+
+
+        //private void _save() {
+        //  SerializationResult result;
+        //  try {
+        //    result = _currTest.getSerializer().serialize(_currTest.getWorld());
+        //  } catch (UnsupportedObjectException e1) {
+        //    log.error("Error serializing world", e1);
+        //    if (errorHandler != null)
+        //      errorHandler.serializationError(e1, "Error serializing the object: " + e1.ToString());
+        //    return;
+        //  }
+
+        //  try {
+        //    FileOutputStream fos = new FileOutputStream(_currTest.getFilename());
+        //    result.writeTo(fos);
+        //    fos.flush();
+        //    fos.close();
+        //  } catch (FileNotFoundException e) {
+        //    log.error("File not found exception while saving", e);
+        //    if (errorHandler != null)
+        //      errorHandler.serializationError(e,
+        //          "File not found exception while saving: " + _currTest.getFilename());
+        //  } catch (IOException e) {
+        //    log.error("Exception while writing world", e);
+        //    if (errorHandler != null)
+        //      errorHandler.serializationError(e, "Error while writing world: " + e.ToString());
+        //  }
+        //  log.debug("Serialed world to " + _currTest.getFilename());
+        //}
+
+        //private void _load() {
+        //  World w;
+        //  try {
+        //    FileInputStream fis = new FileInputStream(_currTest.getFilename());
+        //    w = _currTest.getDeserializer().deserializeWorld(fis);
+        //    fis.close();
+        //  } catch (FileNotFoundException e) {
+        //    log.error("File not found error while loading", e);
+        //    if (errorHandler != null)
+        //      errorHandler.serializationError(e,
+        //          "File not found exception while loading: " + _currTest.getFilename());
+        //    return;
+        //  } catch (UnsupportedObjectException e) {
+        //    log.error("Error deserializing object", e);
+        //    if (errorHandler != null)
+        //      errorHandler.serializationError(e, "Error deserializing the object: " + e.ToString());
+        //    return;
+        //  } catch (IOException e) {
+        //    log.error("Exception while reading world", e);
+        //    if (errorHandler != null)
+        //      errorHandler.serializationError(e, "Error while reading world: " + e.ToString());
+        //    return;
+        //  }
+        //  log.debug("Deserialized world from " + _currTest.getFilename());
+
+        //  _currTest.init(w, true);
+        //}
     }
 
-    try {
-      FileOutputStream fos = new FileOutputStream(currTest.getFilename());
-      result.writeTo(fos);
-      fos.flush();
-      fos.close();
-    } catch (FileNotFoundException e) {
-      log.error("File not found exception while saving", e);
-      if (errorHandler != null)
-        errorHandler.serializationError(e,
-            "File not found exception while saving: " + currTest.getFilename());
-    } catch (IOException e) {
-      log.error("Exception while writing world", e);
-      if (errorHandler != null)
-        errorHandler.serializationError(e, "Error while writing world: " + e.toString());
+
+    internal enum QueueItemType
+    {
+        MouseDown,
+        MouseMove,
+        MouseUp,
+        MouseDrag,
+        KeyPressed,
+        KeyReleased,
+        LaunchBomb,
+        Pause
     }
-    log.debug("Serialed world to " + currTest.getFilename());
-  }
 
-  private void _load() {
-    World w;
-    try {
-      FileInputStream fis = new FileInputStream(currTest.getFilename());
-      w = currTest.getDeserializer().deserializeWorld(fis);
-      fis.close();
-    } catch (FileNotFoundException e) {
-      log.error("File not found error while loading", e);
-      if (errorHandler != null)
-        errorHandler.serializationError(e,
-            "File not found exception while loading: " + currTest.getFilename());
-      return;
-    } catch (UnsupportedObjectException e) {
-      log.error("Error deserializing object", e);
-      if (errorHandler != null)
-        errorHandler.serializationError(e, "Error deserializing the object: " + e.toString());
-      return;
-    } catch (IOException e) {
-      log.error("Exception while reading world", e);
-      if (errorHandler != null)
-        errorHandler.serializationError(e, "Error while reading world: " + e.toString());
-      return;
+
+    internal class QueueItem
+    {
+        public QueueItemType type;
+        public Vec2 p = new Vec2();
+        public char c;
+        public int button;
+        public int code;
+
+        public QueueItem()
+        {
+            type = QueueItemType.LaunchBomb;
+        }
+
+        public QueueItem(QueueItemType t)
+        {
+            type = t;
+        }
+
+        public QueueItem(QueueItemType t, Vec2 pt, int button)
+        {
+            type = t;
+            p.set(pt);
+            this.button = button;
+        }
+
+        public QueueItem(QueueItemType t, char cr, int cd)
+        {
+            type = t;
+            c = cr;
+            code = cd;
+        }
     }
-    log.debug("Deserialized world from " + currTest.getFilename());
-
-    currTest.init(w, true);
-  }
-}
-
-
-enum QueueItemType {
-  MouseDown, MouseMove, MouseUp, MouseDrag, KeyPressed, KeyReleased, LaunchBomb, Pause
-}
-
-
-class QueueItem {
-  public QueueItemType type;
-  public Vec2 p = new Vec2();;
-  public char c;
-  public int button;
-  public int code;
-
-  public QueueItem() {
-    type = QueueItemType.LaunchBomb;
-  }
-
-  public QueueItem(QueueItemType t) {
-    type = t;
-  }
-
-  public QueueItem(QueueItemType t, Vec2 pt, int button) {
-    type = t;
-    p.set(pt);
-    this.button = button;
-  }
-
-  public QueueItem(QueueItemType t, char cr, int cd) {
-    type = t;
-    c = cr;
-    code = cd;
-  }
 }

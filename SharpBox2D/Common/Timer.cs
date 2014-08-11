@@ -22,6 +22,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
+using System;
 using System.Diagnostics;
 
 namespace SharpBox2D.Common
@@ -36,6 +37,7 @@ namespace SharpBox2D.Common
     {
 
         private long resetNanos;
+        private Stopwatch _stopwatch = new Stopwatch();
 
         public Timer()
         {
@@ -44,12 +46,13 @@ namespace SharpBox2D.Common
 
         public void reset()
         {
-            resetNanos = Stopwatch.GetTimestamp();
+            _stopwatch.Reset();
+            _stopwatch.Start();
         }
 
         public float getMilliseconds()
         {
-            return ((Stopwatch.GetTimestamp() - resetNanos)/Stopwatch.Frequency)*1000000000;
+            return (float)_stopwatch.Elapsed.TotalMilliseconds;
         }
     }
 }

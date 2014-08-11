@@ -24,26 +24,28 @@
 /**
  * Created at 3:13:48 AM Jul 17, 2010
  */
-package org.jbox2d.testbed.framework;
+namespace SharpBox2D.TestBed.Framework
+{
+    /**
+     * A TestbedPanel encapsulates the graphical panel displayed to the user. Also it is responsible for
+     * populating panel-specific data in the model (like panel width).
+     * 
+     * @author Daniel Murphy
+     */
+    public interface TestbedPanel
+    {
 
-/**
- * A TestbedPanel encapsulates the graphical panel displayed to the user. Also it is responsible for
- * populating panel-specific data in the model (like panel width).
- * 
- * @author Daniel Murphy
- */
-public interface TestbedPanel {
+        void grabFocus();
 
-  public void grabFocus();
+        /**
+         * Renders the world
+         * @return if the renderer is ready for drawing
+         */
+        bool render();
 
-  /**
-   * Renders the world
-   * @return if the renderer is ready for drawing
-   */
-  public boolean render();
-
-  /**
-   * Paints the rendered world to the screen
-   */
-  public void paintScreen();
+        /**
+         * Paints the rendered world to the screen
+         */
+        void paintScreen();
+    }
 }

@@ -133,8 +133,12 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective masses.
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref m_rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref m_rB);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp, ref m_rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref m_rB);
 
             // J = [-I -r1_skew I r2_skew]
             // [ 0 -1 0 1]
@@ -277,7 +281,11 @@ namespace SharpBox2D.Dynamics.Joints
                 // Solve point-to-point constraint
                 Vec2.crossToOutUnsafe(wA, m_rA, ref temp);
                 Vec2.crossToOutUnsafe(wB, m_rB, ref Cdot1);
-                Cdot1.addLocal(vB).subLocal(vA).subLocal(temp);
+
+                Cdot1.addLocal(vB);
+                Cdot1.subLocal(vA);
+                Cdot1.subLocal(temp);
+
                 float Cdot2 = wB - wA;
                 Cdot.set(Cdot1.x, Cdot1.y, Cdot2);
 
@@ -295,7 +303,9 @@ namespace SharpBox2D.Dynamics.Joints
                     if (newImpulse < 0.0f)
                     {
                         Vec2 rhs = pool.popVec2();
-                        rhs.set(m_mass.ez.x, m_mass.ez.y).mulLocal(m_impulse.z).subLocal(Cdot1);
+                        rhs.set(m_mass.ez.x, m_mass.ez.y);
+                        rhs.mulLocal(m_impulse.z);
+                        rhs.subLocal(Cdot1);
                         m_mass.solve22ToOut(rhs, ref temp);
                         impulse.x = temp.x;
                         impulse.y = temp.y;
@@ -316,7 +326,9 @@ namespace SharpBox2D.Dynamics.Joints
                     if (newImpulse > 0.0f)
                     {
                         Vec2 rhs = pool.popVec2();
-                        rhs.set(m_mass.ez.x, m_mass.ez.y).mulLocal(m_impulse.z).subLocal(Cdot1);
+                        rhs.set(m_mass.ez.x, m_mass.ez.y);
+                        rhs.mulLocal(m_impulse.z);
+                        rhs.subLocal(Cdot1);
                         m_mass.solve22ToOut(rhs, ref temp);
                         impulse.x = temp.x;
                         impulse.y = temp.y;
@@ -355,8 +367,13 @@ namespace SharpBox2D.Dynamics.Joints
 
                 Vec2.crossToOutUnsafe(wA, m_rA, ref temp);
                 Vec2.crossToOutUnsafe(wB, m_rB, ref Cdot);
-                Cdot.addLocal(vB).subLocal(vA).subLocal(temp);
-                m_mass.solve22ToOut(Cdot.negateLocal(), ref impulse); // just leave negated
+
+                Cdot.addLocal(vB);
+                Cdot.subLocal(vA);
+                 Cdot.subLocal(temp);
+                Cdot.negateLocal();
+                
+                m_mass.solve22ToOut(Cdot, ref impulse); // just leave negated
 
                 m_impulse.x += impulse.x;
                 m_impulse.y += impulse.y;
@@ -445,9 +462,16 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 C = pool.popVec2();
                 Vec2 impulse = pool.popVec2();
 
-                Rot.mulToOutUnsafe(qA, C.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-                Rot.mulToOutUnsafe(qB, C.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
-                C.set(cB).addLocal(rB).subLocal(cA).subLocal(rA);
+                C.set(m_localAnchorA);
+                C.subLocal(m_localCenterA);
+                Rot.mulToOutUnsafe(qA, C, ref rA);
+                C.set(m_localAnchorB);
+                C.subLocal(m_localCenterB);
+                Rot.mulToOutUnsafe(qB, C, ref rB);
+                C.set(cB);
+                C.addLocal(rB);
+                C.subLocal(cA);
+                C.subLocal(rA);
                 positionError = C.length();
 
                 float mA = m_invMassA, mB = m_invMassB;
@@ -512,7 +536,8 @@ namespace SharpBox2D.Dynamics.Joints
 
         public override void getReactionForce(float inv_dt, ref Vec2 argOut)
         {
-            argOut.set(m_impulse.x, m_impulse.y).mulLocal(inv_dt);
+            argOut.set(m_impulse.x, m_impulse.y);
+            argOut.mulLocal(inv_dt);
         }
 
 

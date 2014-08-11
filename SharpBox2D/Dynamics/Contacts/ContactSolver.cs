@@ -587,8 +587,17 @@ namespace SharpBox2D.Dynamics.Contacts
                             if (DEBUG_SOLVER)
                             {
                                 // Postconditions
-                                Vec2 dv1 = vB.add(Vec2.cross(wB, cp1rB).subLocal(vA).subLocal(Vec2.cross(wA, cp1rA)));
-                                Vec2 dv2 = vB.add(Vec2.cross(wB, cp2rB).subLocal(vA).subLocal(Vec2.cross(wA, cp2rA)));
+                                var v1 = Vec2.cross(wB, cp1rB);
+                                v1.subLocal(vA);
+                                v1.subLocal(Vec2.cross(wA, cp1rA));
+
+                                Vec2 dv1 = vB.add(v1);
+
+                                Vec2 v2 = Vec2.cross(wB, cp2rB);
+                                v2.subLocal(vA);
+                                v2.subLocal(Vec2.cross(wA, cp2rA));
+
+                                Vec2 dv2 = vB.add(v2);
                                 // Compute normal velocity
                                 vn1 = Vec2.dot(dv1, normal);
                                 vn2 = Vec2.dot(dv2, normal);
@@ -654,7 +663,11 @@ namespace SharpBox2D.Dynamics.Contacts
                             if (DEBUG_SOLVER)
                             {
                                 // Postconditions
-                                Vec2 dv1 = vB.add(Vec2.cross(wB, cp1rB).subLocal(vA).subLocal(Vec2.cross(wA, cp1rA)));
+                                Vec2 v1 = Vec2.cross(wB, cp1rB);
+                                v1.subLocal(vA);
+                                v1.subLocal(Vec2.cross(wA, cp1rA));
+
+                                Vec2 dv1 = vB.add(v1);
                                 // Compute normal velocity
                                 vn1 = Vec2.dot(dv1, normal);
 
@@ -716,7 +729,10 @@ namespace SharpBox2D.Dynamics.Contacts
                             if (DEBUG_SOLVER)
                             {
                                 // Postconditions
-                                Vec2 dv2 = vB.add(Vec2.cross(wB, cp2rB).subLocal(vA).subLocal(Vec2.cross(wA, cp2rA)));
+                                var v1 = Vec2.cross(wB, cp2rB);
+                                v1.subLocal(vA);
+                                v1.subLocal(Vec2.cross(wA, cp2rA));
+                                Vec2 dv2 = vB.add(v1);
                                 // Compute normal velocity
                                 vn2 = Vec2.dot(dv2, normal);
 

@@ -247,7 +247,9 @@ namespace SharpBox2D.Collision.Shapes
         public override void computeMass(MassData massData, float density)
         {
             massData.mass = 0.0f;
-            massData.center.set(m_vertex1).addLocal(m_vertex2).mulLocal(0.5f);
+            massData.center.set(m_vertex1);
+            massData.center.addLocal(m_vertex2);
+            massData.center.mulLocal(0.5f);
             massData.I = 0.0f;
         }
 

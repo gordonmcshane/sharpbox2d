@@ -103,7 +103,8 @@ namespace SharpBox2D.Collision
                     Vec2 wBLocal = proxyB.getVertex(v.indexB);
                     Transform.mulToOutUnsafe(transformA, wALocal, ref v.wA);
                     Transform.mulToOutUnsafe(transformB, wBLocal, ref v.wB);
-                    v.w.set(v.wB).subLocal(v.wA);
+                    v.w.set(v.wB);
+                    v.w.subLocal(v.wA);
                     v.a = 0.0f;
                 }
 
@@ -130,7 +131,8 @@ namespace SharpBox2D.Collision
                     Vec2 wBLocal = proxyB.getVertex(0);
                     Transform.mulToOutUnsafe(transformA, wALocal, ref v.wA);
                     Transform.mulToOutUnsafe(transformB, wBLocal, ref v.wB);
-                    v.w.set(v.wB).subLocal(v.wA);
+                    v.w.set(v.wB);
+                    v.w.subLocal(v.wA);
                     m_count = 1;
                 }
             }
@@ -154,12 +156,15 @@ namespace SharpBox2D.Collision
                 switch (m_count)
                 {
                     case 1:
-                        v.set(m_v1.w).negateLocal();
+                        v.set(m_v1.w);
+                        v.negateLocal();
                         return;
                     case 2:
-                        e12.set(m_v2.w).subLocal(m_v1.w);
+                        e12.set(m_v2.w);
+                        e12.subLocal(m_v1.w);
                         // use ref for a temp variable real quick
-                        v.set(m_v1.w).negateLocal();
+                        v.set(m_v1.w);
+                        v.negateLocal();
                         float sgn = Vec2.cross(e12, v);
 
                         if (sgn > 0f)
@@ -203,8 +208,11 @@ namespace SharpBox2D.Collision
                         v.set(m_v1.w);
                         return;
                     case 2:
-                        case22.set(m_v2.w).mulLocal(m_v2.a);
-                        case2.set(m_v1.w).mulLocal(m_v1.a).addLocal(case22);
+                        case22.set(m_v2.w);
+                        case22.mulLocal(m_v2.a);
+                        case2.set(m_v1.w);
+                        case2.mulLocal(m_v1.a);
+                        case2.addLocal(case22);
                         v.set(case2);
                         return;
                     case 3:
@@ -235,20 +243,30 @@ namespace SharpBox2D.Collision
                         break;
 
                     case 2:
-                        case2.set(m_v1.wA).mulLocal(m_v1.a);
-                        pA.set(m_v2.wA).mulLocal(m_v2.a).addLocal(case2);
+                        case2.set(m_v1.wA);
+                        case2.mulLocal(m_v1.a);
+                        pA.set(m_v2.wA);
+                        pA.mulLocal(m_v2.a);
+                        pA.addLocal(case2);
                         // m_v1.a * m_v1.wA + m_v2.a * m_v2.wA;
                         // *pB = m_v1.a * m_v1.wB + m_v2.a * m_v2.wB;
-                        case2.set(m_v1.wB).mulLocal(m_v1.a);
-                        pB.set(m_v2.wB).mulLocal(m_v2.a).addLocal(case2);
+                        case2.set(m_v1.wB);
+                        case2.mulLocal(m_v1.a);
+                        pB.set(m_v2.wB);
+                        pB.mulLocal(m_v2.a);
+                        pB.addLocal(case2);
 
                         break;
 
                     case 3:
-                        pA.set(m_v1.wA).mulLocal(m_v1.a);
-                        case3.set(m_v2.wA).mulLocal(m_v2.a);
-                        case33.set(m_v3.wA).mulLocal(m_v3.a);
-                        pA.addLocal(case3).addLocal(case33);
+                        pA.set(m_v1.wA);
+                        pA.mulLocal(m_v1.a);
+                        case3.set(m_v2.wA);
+                        case3.mulLocal(m_v2.a);
+                        case33.set(m_v3.wA);
+                        case33.mulLocal(m_v3.a);
+                        pA.addLocal(case3);
+                        pA.addLocal(case33);
                         pB.set(pA);
                         // *pA = m_v1.a * m_v1.wA + m_v2.a * m_v2.wA + m_v3.a * m_v3.wA;
                         // *pB = *pA;
@@ -276,8 +294,10 @@ namespace SharpBox2D.Collision
                         return MathUtils.distance(m_v1.w, m_v2.w);
 
                     case 3:
-                        case3.set(m_v2.w).subLocal(m_v1.w);
-                        case33.set(m_v3.w).subLocal(m_v1.w);
+                        case3.set(m_v2.w);
+                        case3.subLocal(m_v1.w);
+                        case33.set(m_v3.w);
+                        case33.subLocal(m_v1.w);
                         // return Vec2.cross(m_v2.w - m_v1.w, m_v3.w - m_v1.w);
                         return Vec2.cross(case3, case33);
 
@@ -319,7 +339,8 @@ namespace SharpBox2D.Collision
                 // a2 = d12_2 / d12
                 Vec2 w1 = m_v1.w;
                 Vec2 w2 = m_v2.w;
-                e12.set(w2).subLocal(w1);
+                e12.set(w2);
+                e12.subLocal(w1);
 
                 // w1 region
                 float d12_2 = -Vec2.dot(w1, e12);
@@ -375,7 +396,8 @@ namespace SharpBox2D.Collision
                 // [1 1 ][a1] = [1]
                 // [w1.e12 w2.e12][a2] = [0]
                 // a3 = 0
-                e12.set(w2).subLocal(w1);
+                e12.set(w2);
+                e12.subLocal(w1);
                 float w1e12 = Vec2.dot(w1, e12);
                 float w2e12 = Vec2.dot(w2, e12);
                 float d12_1 = w2e12;
@@ -385,7 +407,8 @@ namespace SharpBox2D.Collision
                 // [1 1 ][a1] = [1]
                 // [w1.e13 w3.e13][a3] = [0]
                 // a2 = 0
-                e13.set(w3).subLocal(w1);
+                e13.set(w3);
+                e13.subLocal(w1);
                 float w1e13 = Vec2.dot(w1, e13);
                 float w3e13 = Vec2.dot(w3, e13);
                 float d13_1 = w3e13;
@@ -395,7 +418,8 @@ namespace SharpBox2D.Collision
                 // [1 1 ][a2] = [1]
                 // [w2.e23 w3.e23][a3] = [0]
                 // a1 = 0
-                e23.set(w3).subLocal(w2);
+                e23.set(w3);
+                e23.subLocal(w2);
                 float w2e23 = Vec2.dot(w2, e23);
                 float w3e23 = Vec2.dot(w3, e23);
                 float d23_1 = w3e23;
@@ -589,14 +613,18 @@ namespace SharpBox2D.Collision
                 // Compute a tentative new simplex vertex using support points.
                 SimplexVertex vertex = vertices[simplex.m_count];
 
-                Rot.mulTransUnsafe(transformA.q, d.negateLocal(), ref temp);
+                d.negateLocal();
+                Rot.mulTransUnsafe(transformA.q, d, ref temp);
                 vertex.indexA = proxyA.getSupport(temp);
                 Transform.mulToOutUnsafe(transformA, proxyA.getVertex(vertex.indexA), ref vertex.wA);
                 // Vec2 wBLocal;
-                Rot.mulTransUnsafe(transformB.q, d.negateLocal(), ref temp);
+                d.negateLocal();
+                Rot.mulTransUnsafe(transformB.q, d, ref temp);
                 vertex.indexB = proxyB.getSupport(temp);
+
                 Transform.mulToOutUnsafe(transformB, proxyB.getVertex(vertex.indexB), ref vertex.wB);
-                vertex.w.set(vertex.wB).subLocal(vertex.wA);
+                vertex.w.set(vertex.wB);
+                vertex.w.subLocal(vertex.wA);
 
                 // Iteration count is equated to the number of support point calls.
                 ++iter;
@@ -644,11 +672,14 @@ namespace SharpBox2D.Collision
                     // Shapes are still no overlapped.
                     // Move the witness points to the outer surface.
                     output.distance -= rA + rB;
-                    normal.set(output.pointB).subLocal(output.pointA);
+                    normal.set(output.pointB);
+                    normal.subLocal(output.pointA);
                     normal.normalize();
-                    temp.set(normal).mulLocal(rA);
+                    temp.set(normal);
+                    temp.mulLocal(rA);
                     output.pointA.addLocal(temp);
-                    temp.set(normal).mulLocal(rB);
+                    temp.set(normal);
+                    temp.mulLocal(rB);
                     output.pointB.subLocal(temp);
                 }
                 else
@@ -656,7 +687,8 @@ namespace SharpBox2D.Collision
                     // Shapes are overlapped when radii are considered.
                     // Move the witness points to the middle.
                     // Vec2 p = 0.5f * (output.pointA + output.pointB);
-                    output.pointA.addLocal(output.pointB).mulLocal(.5f);
+                    output.pointA.addLocal(output.pointB);
+                    output.pointA.mulLocal(.5f);
                     output.pointB.set(output.pointA);
                     output.distance = 0.0f;
                 }

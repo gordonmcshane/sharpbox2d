@@ -89,7 +89,7 @@ namespace SharpBox2D.Dynamics
         public ProfileEntry broadphase = new ProfileEntry();
         public ProfileEntry solveTOI = new ProfileEntry();
 
-        public void toDebugstrings(List<string> strings)
+        public void toDebugStrings(List<string> strings)
         {
             strings.Add("Profile:");
             strings.Add(" step: " + step);

@@ -21,86 +21,95 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.joints.RevoluteJointDef;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
 
-public class FreePendulumTest extends TestbedTest {
-  private final boolean switchBodiesInJoint;
 
-  public FreePendulumTest(boolean switchBodiesInJoint) {
-    this.switchBodiesInJoint = switchBodiesInJoint;
-  }
-
-  @Override
-  public boolean isSaveLoadEnabled() {
-    return true;
-  }
-
-  @Override
-  public void initTest(boolean deserialized) {
-    if (deserialized) {
-      return;
-    }
-    Body pendulum;
-    Body base;
-    Body ground;
-
+    public class FreePendulumTest : TestbedTest
     {
-      CircleShape circleShape = new CircleShape();
-      circleShape.m_radius = 1;
-      Shape shape = circleShape;
+        private bool switchBodiesInJoint;
 
-      BodyDef bodyDef = new BodyDef();
-      bodyDef.type = BodyType.DYNAMIC;
-      bodyDef.position.set(-5, 0);
-      bodyDef.allowSleep = false;
-      pendulum = getWorld().createBody(bodyDef);
-      pendulum.createFixture(shape, 1);
+        public FreePendulumTest(bool switchBodiesInJoint)
+        {
+            this.switchBodiesInJoint = switchBodiesInJoint;
+        }
+
+
+        public override bool isSaveLoadEnabled()
+        {
+            return true;
+        }
+
+
+        public override void initTest(bool deserialized)
+        {
+            if (deserialized)
+            {
+                return;
+            }
+            Body pendulum;
+            Body pendulumBase;
+            Body ground;
+
+            {
+                CircleShape circleShape = new CircleShape();
+                circleShape.m_radius = 1;
+                Shape shape = circleShape;
+
+                BodyDef bodyDef = new BodyDef();
+                bodyDef.type = BodyType.DYNAMIC;
+                bodyDef.position.set(-5, 0);
+                bodyDef.allowSleep = false;
+                pendulum = getWorld().createBody(bodyDef);
+                pendulum.createFixture(shape, 1);
+            }
+
+            {
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(1, 1);
+
+                BodyDef bodyDef = new BodyDef();
+                bodyDef.type = BodyType.DYNAMIC;
+                bodyDef.position.set(0, 2);
+                bodyDef.allowSleep = false;
+                pendulumBase = getWorld().createBody(bodyDef);
+                pendulumBase.createFixture(shape, 1);
+            }
+
+            {
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(3, 1);
+
+                BodyDef bodyDef = new BodyDef();
+                bodyDef.type = BodyType.STATIC;
+                ground = getWorld().createBody(bodyDef);
+                ground.createFixture(shape, 0);
+            }
+
+            RevoluteJointDef jointDef = new RevoluteJointDef();
+
+            if (switchBodiesInJoint)
+                jointDef.initialize(pendulum, pendulumBase, new Vec2(0, 0));
+            else
+                jointDef.initialize(pendulumBase, pendulum, new Vec2(0, 0));
+
+            getWorld().createJoint(jointDef);
+        }
+
+
+        public override string getTestName()
+        {
+            return "Free Pendulum " + (switchBodiesInJoint ? "1" : "0");
+        }
     }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(1, 1);
-
-      BodyDef bodyDef = new BodyDef();
-      bodyDef.type = BodyType.DYNAMIC;
-      bodyDef.position.set(0, 2);
-      bodyDef.allowSleep = false;
-      base = getWorld().createBody(bodyDef);
-      base.createFixture(shape, 1);
-    }
-
-    {
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(3, 1);
-
-      BodyDef bodyDef = new BodyDef();
-      bodyDef.type = BodyType.STATIC;
-      ground = getWorld().createBody(bodyDef);
-      ground.createFixture(shape, 0);
-    }
-
-    RevoluteJointDef jointDef = new RevoluteJointDef();
-
-    if (switchBodiesInJoint)
-      jointDef.initialize(pendulum, base, new Vec2(0, 0));
-    else
-      jointDef.initialize(base, pendulum, new Vec2(0, 0));
-
-    getWorld().createJoint(jointDef);
-  }
-
-  @Override
-  public String getTestName() {
-    return "Free Pendulum " + (switchBodiesInJoint ? "1" : "0");
-  }
 }

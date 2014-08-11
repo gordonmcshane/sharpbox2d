@@ -22,6 +22,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
+using System;
 using System.Diagnostics;
 using SharpBox2D.Collision.Broadphase;
 using SharpBox2D.Collision.Shapes;
@@ -31,7 +32,17 @@ using SharpBox2D.Dynamics.Joints;
 
 namespace SharpBox2D.Dynamics
 {
-
+    [Flags]
+    public enum BodyFlags
+    {
+        Island = (1 << 0),
+        Awake = (1 << 1),
+        AutoSleep = (1 << 2),
+        Bullet = (1 << 3),
+        FixedRotation = (1 << 4),
+        Active = (1 << 5),
+        TOI = (1 << 6)
+    }
 /**
  * A rigid body. These are created via World.createBody.
  * 
@@ -50,7 +61,7 @@ namespace SharpBox2D.Dynamics
 
         public BodyType m_type;
 
-        public int m_flags;
+        public BodyFlags m_flags;
 
         public int m_islandIndex;
 
@@ -110,23 +121,23 @@ namespace SharpBox2D.Dynamics
 
             if (bd.bullet)
             {
-                m_flags |= e_bulletFlag;
+                m_flags |= BodyFlags.Bullet;
             }
             if (bd.fixedRotation)
             {
-                m_flags |= e_fixedRotationFlag;
+                m_flags |= BodyFlags.FixedRotation;
             }
             if (bd.allowSleep)
             {
-                m_flags |= e_autoSleepFlag;
+                m_flags |= BodyFlags.AutoSleep;
             }
             if (bd.awake)
             {
-                m_flags |= e_awakeFlag;
+                m_flags |= BodyFlags.Awake;
             }
             if (bd.active)
             {
-                m_flags |= e_activeFlag;
+                m_flags |= BodyFlags.Active;
             }
 
             m_world = world;
@@ -202,7 +213,7 @@ namespace SharpBox2D.Dynamics
             Fixture fixture = new Fixture();
             fixture.create(this, def);
 
-            if ((m_flags & e_activeFlag) == e_activeFlag)
+            if ((m_flags & BodyFlags.Active) == BodyFlags.Active)
             {
                 BroadPhase broadPhase = m_world.m_contactManager.m_broadPhase;
                 fixture.createProxies(broadPhase, m_xf);
@@ -315,7 +326,7 @@ namespace SharpBox2D.Dynamics
                 }
             }
 
-            if ((m_flags & e_activeFlag) == e_activeFlag)
+            if ((m_flags & BodyFlags.Active) == BodyFlags.Active)
             {
                 BroadPhase broadPhase = m_world.m_contactManager.m_broadPhase;
                 fixture.destroyProxies(broadPhase);
@@ -717,7 +728,7 @@ namespace SharpBox2D.Dynamics
 
             m_invMass = 1.0f/m_mass;
 
-            if (massData.I > 0.0f && (m_flags & e_fixedRotationFlag) == 0)
+            if (massData.I > 0.0f && (m_flags & BodyFlags.FixedRotation) == 0)
             {
                 m_I = massData.I - m_mass*Vec2.dot(massData.center, massData.center);
                 Debug.Assert(m_I > 0.0f);
@@ -735,7 +746,8 @@ namespace SharpBox2D.Dynamics
             // Update center of mass velocity.
             // m_linearVelocity += Cross(m_angularVelocity, m_sweep.c - oldCenter);
             Vec2 temp = m_world.getPool().popVec2();
-            temp.set(m_sweep.c).subLocal(oldCenter);
+            temp.set(m_sweep.c);
+            temp.subLocal(oldCenter);
             Vec2.crossToOut(m_angularVelocity, temp, ref temp);
             m_linearVelocity.addLocal(temp);
 
@@ -785,7 +797,8 @@ namespace SharpBox2D.Dynamics
                 f.getMassData(massData);
                 m_mass += massData.mass;
                 // center += massData.mass * massData.center;
-                temp.set(massData.center).mulLocal(massData.mass);
+                temp.set(massData.center);
+                temp.mulLocal(massData.mass);
                 localCenter.addLocal(temp);
                 m_I += massData.I;
             }
@@ -803,7 +816,7 @@ namespace SharpBox2D.Dynamics
                 m_invMass = 1.0f;
             }
 
-            if (m_I > 0.0f && (m_flags & e_fixedRotationFlag) == 0)
+            if (m_I > 0.0f && (m_flags & BodyFlags.FixedRotation) == 0)
             {
                 // Center the inertia about the center of mass.
                 m_I -= m_mass*Vec2.dot(localCenter, localCenter);
@@ -826,7 +839,8 @@ namespace SharpBox2D.Dynamics
 
             // Update center of mass velocity.
             // m_linearVelocity += Cross(m_angularVelocity, m_sweep.c - oldCenter);
-            temp.set(m_sweep.c).subLocal(oldCenter);
+            temp.set(m_sweep.c);
+            temp.subLocal(oldCenter);
 
             Vec2 temp2 = oldCenter;
             Vec2.crossToOutUnsafe(m_angularVelocity, temp, ref temp2);
@@ -1059,7 +1073,7 @@ namespace SharpBox2D.Dynamics
 
         public bool isBullet()
         {
-            return (m_flags & e_bulletFlag) == e_bulletFlag;
+            return (m_flags & BodyFlags.Bullet) == BodyFlags.Bullet;
         }
 
         /** Should this body be treated like a bullet for continuous collision detection? */
@@ -1068,11 +1082,11 @@ namespace SharpBox2D.Dynamics
         {
             if (flag)
             {
-                m_flags |= e_bulletFlag;
+                m_flags |= BodyFlags.Bullet;
             }
             else
             {
-                m_flags &= ~e_bulletFlag;
+                m_flags &= ~BodyFlags.Bullet;
             }
         }
 
@@ -1086,11 +1100,11 @@ namespace SharpBox2D.Dynamics
         {
             if (flag)
             {
-                m_flags |= e_autoSleepFlag;
+                m_flags |= BodyFlags.AutoSleep;
             }
             else
             {
-                m_flags &= ~e_autoSleepFlag;
+                m_flags &= ~BodyFlags.AutoSleep;
                 setAwake(true);
             }
         }
@@ -1103,7 +1117,7 @@ namespace SharpBox2D.Dynamics
 
         public bool isSleepingAllowed()
         {
-            return (m_flags & e_autoSleepFlag) == e_autoSleepFlag;
+            return (m_flags & BodyFlags.AutoSleep) == BodyFlags.AutoSleep;
         }
 
         /**
@@ -1117,15 +1131,15 @@ namespace SharpBox2D.Dynamics
         {
             if (flag)
             {
-                if ((m_flags & e_awakeFlag) == 0)
+                if ((m_flags & BodyFlags.Awake) == 0)
                 {
-                    m_flags |= e_awakeFlag;
+                    m_flags |= BodyFlags.Awake;
                     m_sleepTime = 0.0f;
                 }
             }
             else
             {
-                m_flags &= ~e_awakeFlag;
+                m_flags &= ~BodyFlags.Awake;
                 m_sleepTime = 0.0f;
                 m_linearVelocity.setZero();
                 m_angularVelocity = 0.0f;
@@ -1142,7 +1156,7 @@ namespace SharpBox2D.Dynamics
 
         public bool isAwake()
         {
-            return (m_flags & e_awakeFlag) == e_awakeFlag;
+            return (m_flags & BodyFlags.Awake) == BodyFlags.Awake;
         }
 
         /**
@@ -1169,7 +1183,7 @@ namespace SharpBox2D.Dynamics
 
             if (flag)
             {
-                m_flags |= e_activeFlag;
+                m_flags |= BodyFlags.Active;
 
                 // Create all proxies.
                 BroadPhase broadPhase = m_world.m_contactManager.m_broadPhase;
@@ -1182,7 +1196,7 @@ namespace SharpBox2D.Dynamics
             }
             else
             {
-                m_flags &= ~e_activeFlag;
+                m_flags &= ~BodyFlags.Active;
 
                 // Destroy all proxies.
                 BroadPhase broadPhase = m_world.m_contactManager.m_broadPhase;
@@ -1211,7 +1225,7 @@ namespace SharpBox2D.Dynamics
 
         public bool isActive()
         {
-            return (m_flags & e_activeFlag) == e_activeFlag;
+            return (m_flags & BodyFlags.Active) == BodyFlags.Active;
         }
 
         /**
@@ -1224,11 +1238,11 @@ namespace SharpBox2D.Dynamics
         {
             if (flag)
             {
-                m_flags |= e_fixedRotationFlag;
+                m_flags |= BodyFlags.FixedRotation;
             }
             else
             {
-                m_flags &= ~e_fixedRotationFlag;
+                m_flags &= ~BodyFlags.FixedRotation;
             }
 
             resetMassData();
@@ -1242,7 +1256,7 @@ namespace SharpBox2D.Dynamics
 
         public bool isFixedRotation()
         {
-            return (m_flags & e_fixedRotationFlag) == e_fixedRotationFlag;
+            return (m_flags & BodyFlags.FixedRotation) == BodyFlags.FixedRotation;
         }
 
         /** Get the list of all fixtures attached to this body. */
@@ -1383,7 +1397,8 @@ namespace SharpBox2D.Dynamics
             m_xf.q.set(m_sweep.a);
             // m_xf.position = m_sweep.c - Mul(m_xf.R, m_sweep.localCenter);
             Rot.mulToOutUnsafe(m_xf.q, m_sweep.localCenter, ref m_xf.p);
-            m_xf.p.mulLocal(-1).addLocal(m_sweep.c);
+            m_xf.p.mulLocal(-1);
+            m_xf.p.addLocal(m_sweep.c);
         }
     }
 }

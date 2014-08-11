@@ -81,10 +81,17 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective masses.
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref m_rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref m_rB);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp, ref m_rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref m_rB);
 
-            m_u.set(cB).addLocal(m_rB).subLocal(cA).subLocal(m_rA);
+            m_u.set(cB);
+            m_u.addLocal(m_rB);
+            m_u.subLocal(cA);
+            m_u.subLocal(m_rA);
 
             m_length = m_u.length();
 
@@ -165,7 +172,9 @@ namespace SharpBox2D.Dynamics.Joints
             vpB.addLocal(vB);
 
             float C = m_length - m_maxLength;
-            float Cdot = Vec2.dot(m_u, temp.set(vpB).subLocal(vpA));
+            temp.set(vpB);
+            temp.subLocal(vpA);
+            float Cdot = Vec2.dot(m_u, temp);
 
             // Predictive constraint.
             if (C < 0.0f)
@@ -214,9 +223,16 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective masses.
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
-            u.set(cB).addLocal(rB).subLocal(cA).subLocal(rA);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp , ref rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref rB);
+            u.set(cB);
+            u.addLocal(rB);
+            u.subLocal(cA);
+            u.subLocal(rA);
 
             float length = u.normalize();
             float C = length - m_maxLength;
@@ -260,7 +276,9 @@ namespace SharpBox2D.Dynamics.Joints
 
         public override void getReactionForce(float inv_dt, ref Vec2 argOut)
         {
-            argOut.set(m_u).mulLocal(inv_dt).mulLocal(m_impulse);
+            argOut.set(m_u);
+            argOut.mulLocal(inv_dt);
+            argOut.mulLocal(m_impulse);
         }
 
 

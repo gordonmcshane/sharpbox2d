@@ -4,10 +4,10 @@ namespace SharpBox2D.Particle
 {
     internal class VoronoiDiagramTaskPool : MutableStack<VoronoiDiagramTask>
     {
-        public VoronoiDiagramTaskPool(int argInitSize) : base(argInitSize) { }
+        public VoronoiDiagramTaskPool(int argInitSize) : base(argInitSize, () => new VoronoiDiagramTask()) { }
 
         protected override VoronoiDiagramTask newInstance() {
-            return new VoronoiDiagramTask();
+           return FactoryMethod();
         }
         
         protected override VoronoiDiagramTask[] newArray(int size) {

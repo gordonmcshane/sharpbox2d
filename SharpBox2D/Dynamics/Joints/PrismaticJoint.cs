@@ -193,8 +193,12 @@ namespace SharpBox2D.Dynamics.Joints
         public override void getReactionForce(float inv_dt, ref Vec2 argOut)
         {
             Vec2 temp = pool.popVec2();
-            temp.set(m_axis).mulLocal(m_motorImpulse + m_impulse.z);
-            argOut.set(m_perp).mulLocal(m_impulse.x).addLocal(temp).mulLocal(inv_dt);
+            temp.set(m_axis);
+            temp.mulLocal(m_motorImpulse + m_impulse.z);
+            argOut.set(m_perp);
+            temp.mulLocal(m_impulse.x);
+            temp.addLocal(temp);
+            temp.mulLocal(inv_dt);
             pool.pushVec2(1);
         }
 
@@ -223,16 +227,21 @@ namespace SharpBox2D.Dynamics.Joints
             Vec2 temp2 = pool.popVec2();
             Vec2 temp3 = pool.popVec2();
 
-            temp.set(m_localAnchorA).subLocal(bA.m_sweep.localCenter);
+            temp.set(m_localAnchorA);
+            temp.subLocal(bA.m_sweep.localCenter);
             Rot.mulToOutUnsafe(bA.m_xf.q, temp, ref rA);
 
-            temp.set(m_localAnchorB).subLocal(bB.m_sweep.localCenter);
+            temp.set(m_localAnchorB);
+            temp.subLocal(bB.m_sweep.localCenter);
             Rot.mulToOutUnsafe(bB.m_xf.q, temp, ref rB);
 
-            p1.set(bA.m_sweep.c).addLocal(rA);
-            p2.set(bB.m_sweep.c).addLocal(rB);
+            p1.set(bA.m_sweep.c);
+            p1.addLocal(rA);
+            p2.set(bB.m_sweep.c);
+            p2.addLocal(rB);
 
-            d.set(p2).subLocal(p1);
+            d.set(p2);
+            d.subLocal(p1);
             Rot.mulToOutUnsafe(bA.m_xf.q, m_localXAxisA, ref axis);
 
             Vec2 vA = bA.m_linearVelocity;
@@ -245,7 +254,9 @@ namespace SharpBox2D.Dynamics.Joints
             Vec2.crossToOutUnsafe(wB, rB, ref temp2);
             Vec2.crossToOutUnsafe(wA, rA, ref temp3);
 
-            temp2.addLocal(vB).subLocal(vA).subLocal(temp3);
+            temp2.addLocal(vB);
+            temp2.subLocal(vA);
+            temp2.subLocal(temp3);
             float speed = Vec2.dot(d, temp) + Vec2.dot(axis, temp2);
 
             pool.pushVec2(9);
@@ -456,9 +467,16 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // Compute the effective masses.
-            Rot.mulToOutUnsafe(qA, d.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOutUnsafe(qB, d.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
-            d.set(cB).subLocal(cA).addLocal(rB).subLocal(rA);
+            d.set(m_localAnchorA);
+            d.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, d, ref rA);
+            d.set(m_localAnchorB);
+            d.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, d, ref rB);
+            d.set(cB);
+            d.subLocal(cA);
+            d.addLocal(rB);
+            d.subLocal(rA);
 
             float mA = m_invMassA, mB = m_invMassB;
             float iA = m_invIA, iB = m_invIB;
@@ -466,7 +484,8 @@ namespace SharpBox2D.Dynamics.Joints
             // Compute motor Jacobian and effective mass.
             {
                 Rot.mulToOutUnsafe(qA, m_localXAxisA, ref m_axis);
-                temp.set(d).addLocal(rA);
+                temp.set(d);
+                temp.addLocal(rA);
                 m_a1 = Vec2.cross(temp, m_axis);
                 m_a2 = Vec2.cross(rB, m_axis);
 
@@ -481,7 +500,8 @@ namespace SharpBox2D.Dynamics.Joints
             {
                 Rot.mulToOutUnsafe(qA, m_localYAxisA, ref m_perp);
 
-                temp.set(d).addLocal(rA);
+                temp.set(d);
+                temp.addLocal(rA);
                 m_s1 = Vec2.cross(temp, m_perp);
                 m_s2 = Vec2.cross(rB, m_perp);
 
@@ -551,8 +571,11 @@ namespace SharpBox2D.Dynamics.Joints
                 m_motorImpulse *= data.step.dtRatio;
 
                 Vec2 P = pool.popVec2();
-                temp.set(m_axis).mulLocal(m_motorImpulse + m_impulse.z);
-                P.set(m_perp).mulLocal(m_impulse.x).addLocal(temp);
+                temp.set(m_axis);
+                temp.mulLocal(m_motorImpulse + m_impulse.z);
+                P.set(m_perp);
+                P.mulLocal(m_impulse.x);
+                P.addLocal(temp);
 
                 float LA = m_impulse.x*m_s1 + m_impulse.y + (m_motorImpulse + m_impulse.z)*m_a1;
                 float LB = m_impulse.x*m_s2 + m_impulse.y + (m_motorImpulse + m_impulse.z)*m_a2;
@@ -598,7 +621,8 @@ namespace SharpBox2D.Dynamics.Joints
             // Solve linear motor constraint.
             if (m_enableMotor && m_limitState != LimitState.EQUAL)
             {
-                temp.set(vB).subLocal(vA);
+                temp.set(vB);
+                temp.subLocal(vA);
                 float Cdot = Vec2.dot(m_axis, temp) + m_a2*wB - m_a1*wA;
                 float impulse = m_motorMass*(m_motorSpeed - Cdot);
                 float oldImpulse = m_motorImpulse;
@@ -607,7 +631,8 @@ namespace SharpBox2D.Dynamics.Joints
                 impulse = m_motorImpulse - oldImpulse;
 
                 Vec2 P = pool.popVec2();
-                P.set(m_axis).mulLocal(impulse);
+                P.set(m_axis);
+                P.mulLocal(impulse);
                 float LA = impulse*m_a1;
                 float LB = impulse*m_a2;
 
@@ -623,7 +648,8 @@ namespace SharpBox2D.Dynamics.Joints
             }
 
             Vec2 Cdot1 = pool.popVec2();
-            temp.set(vB).subLocal(vA);
+            temp.set(vB);
+            temp.subLocal(vA);
             Cdot1.x = Vec2.dot(m_perp, temp) + m_s2*wB - m_s1*wA;
             Cdot1.y = wB - wA;
             // System.ref.println(Cdot1);
@@ -632,7 +658,8 @@ namespace SharpBox2D.Dynamics.Joints
             {
                 // Solve prismatic and limit constraint in block form.
                 float Cdot2;
-                temp.set(vB).subLocal(vA);
+                temp.set(vB);
+                temp.subLocal(vA);
                 Cdot2 = Vec2.dot(m_axis, temp) + m_a2*wB - m_a1*wA;
 
                 Vec3 Cdot = pool.popVec3();
@@ -642,7 +669,8 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec3 df = pool.popVec3();
 
                 f1.set(m_impulse);
-                m_K.solve33ToOut(Cdot.negateLocal(), ref df);
+                Cdot.negateLocal();
+                m_K.solve33ToOut(Cdot, ref df);
                 // Cdot.negateLocal(); not used anymore
                 m_impulse.addLocal(df);
 
@@ -660,8 +688,11 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 b = pool.popVec2();
                 Vec2 f2r = pool.popVec2();
 
-                temp.set(m_K.ez.x, m_K.ez.y).mulLocal(m_impulse.z - f1.z);
-                b.set(Cdot1).negateLocal().subLocal(temp);
+                temp.set(m_K.ez.x, m_K.ez.y);
+                temp.mulLocal(m_impulse.z - f1.z);
+                b.set(Cdot1);
+                b.negateLocal();
+                b.subLocal(temp);
 
                 m_K.solve22ToOut(b, ref f2r);
                 f2r.addLocal(f1.x, f1.y);
@@ -671,8 +702,11 @@ namespace SharpBox2D.Dynamics.Joints
                 df.set(m_impulse).subLocal(f1);
 
                 Vec2 P = pool.popVec2();
-                temp.set(m_axis).mulLocal(df.z);
-                P.set(m_perp).mulLocal(df.x).addLocal(temp);
+                temp.set(m_axis);
+                temp.mulLocal(df.z);
+                P.set(m_perp);
+                P.mulLocal(df.x);
+                P.addLocal(temp);
 
                 float LA = df.x*m_s1 + df.y + df.z*m_a1;
                 float LB = df.x*m_s2 + df.y + df.z*m_a2;
@@ -692,14 +726,16 @@ namespace SharpBox2D.Dynamics.Joints
             {
                 // Limit is inactive, just solve the prismatic constraint in block form.
                 Vec2 df = pool.popVec2();
-                m_K.solve22ToOut(Cdot1.negateLocal(), ref df);
+                Cdot1.negateLocal();
+                m_K.solve22ToOut(Cdot1, ref df);
                 Cdot1.negateLocal();
 
                 m_impulse.x += df.x;
                 m_impulse.y += df.y;
 
                 Vec2 P = pool.popVec2();
-                P.set(m_perp).mulLocal(df.x);
+                P.set(m_perp);
+                P.mulLocal(df.x);
                 float LA = df.x*m_s1 + df.y;
                 float LB = df.x*m_s2 + df.y;
 
@@ -751,16 +787,28 @@ namespace SharpBox2D.Dynamics.Joints
             float iA = m_invIA, iB = m_invIB;
 
             // Compute fresh Jacobians
-            Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
-            d.set(cB).addLocal(rB).subLocal(cA).subLocal(rA);
+            temp.set(m_localAnchorA);
+            temp.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, temp, ref rA);
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, temp, ref rB);
+
+            d.set(cB);
+            d.addLocal(rB);
+            d.subLocal(cA);
+            d.subLocal(rA);
 
             Rot.mulToOutUnsafe(qA, m_localXAxisA, ref axis);
-            float a1 = Vec2.cross(temp.set(d).addLocal(rA), axis);
+            temp.set(d);
+            temp.addLocal(rA);
+            float a1 = Vec2.cross(temp, axis);
             float a2 = Vec2.cross(rB, axis);
             Rot.mulToOutUnsafe(qA, m_localYAxisA, ref perp);
 
-            float s1 = Vec2.cross(temp.set(d).addLocal(rA), perp);
+            temp.set(d);
+            temp.addLocal(rA);
+            float s1 = Vec2.cross(temp, perp);
             float s2 = Vec2.cross(rB, perp);
 
             C1.x = Vec2.dot(perp, d);
@@ -826,8 +874,8 @@ namespace SharpBox2D.Dynamics.Joints
                 C.x = C1.x;
                 C.y = C1.y;
                 C.z = C2;
-
-                K.solve33ToOut(C.negateLocal(), ref impulse);
+                C.negateLocal();
+                K.solve33ToOut(C, ref impulse);
                 pool.pushVec3(1);
                 pool.pushMat33(1);
             }
@@ -846,7 +894,8 @@ namespace SharpBox2D.Dynamics.Joints
                 K.ey.set(k12, k22);
 
                 // temp is impulse1
-                K.solveToOut(C1.negateLocal(), ref temp);
+                C1.negateLocal();
+                K.solveToOut(C1, ref temp);
                 C1.negateLocal();
 
                 impulse.x = temp.x;

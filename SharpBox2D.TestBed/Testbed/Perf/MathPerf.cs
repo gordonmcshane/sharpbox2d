@@ -24,10 +24,6 @@
 /**
  * Created at 7:09:57 PM Jan 18, 2011
  */
-package org.jbox2d.testbed.perf;
-
-import org.jbox2d.common.MathUtils;
-import org.jbox2d.profile.BasicPerformanceTest;
 
 // Results from Mac 1/19/11
 //Test Name               Milliseconds Avg
@@ -62,130 +58,162 @@ import org.jbox2d.profile.BasicPerformanceTest;
 /**
  * @author Daniel Murphy
  */
-public class MathPerf extends BasicPerformanceTest {
 
-  public static int INNER_ITERS = 5000;
-  public static int OUTER_ITERS = 5000;
+using System;
+using SharpBox2D.Common;
+using SharpBox2D.TestBed.Profile;
 
-  String[] tests = new String[] {"Sin", "SinLUT", "Pow", "FastPow", "Max", "FastMax", "Floor",
-      "fastFloor", "aTan2", "fastATan2", "ceil", "fastCeil"};
+namespace SharpBox2D.TestBed.Perf
+{
 
-  public float aStore = 0;
 
-  public MathPerf() {
-    super(12, OUTER_ITERS, INNER_ITERS);
-  }
+    public class MathPerf : BasicPerformanceTest
+    {
 
-  @Override
-  public void step(int argNum) {
-    float random = MathUtils.randomFloat(-Float.MAX_VALUE / 3, Float.MAX_VALUE / 3);
-    switch (argNum) {
-      case 0:
-        runSinTest(random);
-        break;
-      case 1:
-        runSinLUTTest(random);
-        break;
-      case 2:
-        runPowTest(random);
-        break;
-      case 3:
-        runFastPowTest(random);
-        break;
-      case 4:
-        runMaxTest(random);
-        break;
-      case 5:
-        runFastMaxTest(random);
-        break;
-      case 6:
-        runFloorTest(random);
-        break;
-      case 7:
-        runFastFloorTest(random);
-        break;
-      case 8:
-        runAtan2Test(random);
-        break;
-      case 9:
-        runFastAtan2Test(random);
-        break;
-      case 10:
-        runCeilTest(random);
-        break;
-      case 11:
-        runFastCeilTest(random);
-        break;
+        public static int INNER_ITERS = 5000;
+        public static int OUTER_ITERS = 5000;
+
+        private string[] tests = new string[]
+        {
+            "Sin", "SinLUT", "Pow", "FastPow", "Max", "FastMax", "Floor",
+            "fastFloor", "aTan2", "fastATan2", "ceil", "fastCeil"
+        };
+
+        public float aStore = 0;
+
+        public MathPerf() :
+            base(12, OUTER_ITERS, INNER_ITERS)
+        {
+        }
+
+
+
+        public override void step(int argNum)
+        {
+            float random = MathUtils.randomFloat(float.MinValue/3, float.MaxValue/3);
+            switch (argNum)
+            {
+                case 0:
+                    runSinTest(random);
+                    break;
+                case 1:
+                    runSinLUTTest(random);
+                    break;
+                case 2:
+                    runPowTest(random);
+                    break;
+                case 3:
+                    runFastPowTest(random);
+                    break;
+                case 4:
+                    runMaxTest(random);
+                    break;
+                case 5:
+                    runFastMaxTest(random);
+                    break;
+                case 6:
+                    runFloorTest(random);
+                    break;
+                case 7:
+                    runFastFloorTest(random);
+                    break;
+                case 8:
+                    runAtan2Test(random);
+                    break;
+                case 9:
+                    runFastAtan2Test(random);
+                    break;
+                case 10:
+                    runCeilTest(random);
+                    break;
+                case 11:
+                    runFastCeilTest(random);
+                    break;
+            }
+        }
+
+        public void runSinTest(float argRandom)
+        {
+            float a = (float) System.Math.Sin(argRandom);
+            aStore += a;
+        }
+
+        public void runSinLUTTest(float argRandom)
+        {
+            float a = MathUtils.sinLUT(argRandom);
+            aStore += a;
+        }
+
+        public void runPowTest(float argRandom)
+        {
+            float a = (float) System.Math.Pow(argRandom, MathUtils.randomFloat(-100, 100));
+            aStore += a;
+        }
+
+        public void runFastPowTest(float argRandom)
+        {
+            float a = MathUtils.fastPow(argRandom, MathUtils.randomFloat(-100, 100));
+            aStore += a;
+        }
+
+        public void runMaxTest(float argRandom)
+        {
+            float a = System.Math.Max(argRandom, MathUtils.randomFloat(-100, 100));
+            aStore += a;
+        }
+
+        public void runFastMaxTest(float argRandom)
+        {
+            float a = MathUtils.max(argRandom, MathUtils.randomFloat(-100, 100));
+            aStore += a;
+        }
+
+        public void runFloorTest(float argRandom)
+        {
+            float a = (float) System.Math.Floor(argRandom);
+            aStore += a;
+        }
+
+        public void runFastFloorTest(float argRandom)
+        {
+            float a = MathUtils.fastFloor(argRandom);
+            aStore += a;
+        }
+
+        public void runAtan2Test(float argRandom)
+        {
+            float a = (float) System.Math.Atan2(argRandom, MathUtils.randomFloat(-10000, 10000));
+            aStore += a;
+        }
+
+        public void runFastAtan2Test(float argRandom)
+        {
+            float a = MathUtils.fastAtan2(argRandom, MathUtils.randomFloat(-10000, 10000));
+            aStore += a;
+        }
+
+        public void runCeilTest(float argRandom)
+        {
+            float a = (float) System.Math.Ceiling(argRandom);
+            aStore += a;
+        }
+
+        public void runFastCeilTest(float argRandom)
+        {
+            float a = MathUtils.fastCeil(argRandom);
+            aStore += a;
+        }
+
+
+        public override string getTestName(int argNum)
+        {
+            return tests[argNum];
+        }
+
+        public static void main(string[] c)
+        {
+            MathPerf p = new MathPerf();
+            p.go();
+        }
     }
-  }
-
-  public void runSinTest(float argRandom) {
-    float a = (float) StrictMath.sin(argRandom);
-    aStore += a;
-  }
-
-  public void runSinLUTTest(float argRandom) {
-    float a = MathUtils.sinLUT(argRandom);
-    aStore += a;
-  }
-
-  public void runPowTest(float argRandom) {
-    float a = (float) StrictMath.pow(argRandom, MathUtils.randomFloat(-100, 100));
-    aStore += a;
-  }
-
-  public void runFastPowTest(float argRandom) {
-    float a = MathUtils.fastPow(argRandom, MathUtils.randomFloat(-100, 100));
-    aStore += a;
-  }
-
-  public void runMaxTest(float argRandom) {
-    float a = StrictMath.max(argRandom, MathUtils.randomFloat(-100, 100));
-    aStore += a;
-  }
-
-  public void runFastMaxTest(float argRandom) {
-    float a = MathUtils.max(argRandom, MathUtils.randomFloat(-100, 100));
-    aStore += a;
-  }
-
-  public void runFloorTest(float argRandom) {
-    float a = (float) StrictMath.floor(argRandom);
-    aStore += a;
-  }
-
-  public void runFastFloorTest(float argRandom) {
-    float a = MathUtils.fastFloor(argRandom);
-    aStore += a;
-  }
-
-  public void runAtan2Test(float argRandom) {
-    float a = (float) StrictMath.atan2(argRandom, MathUtils.randomFloat(-10000, 10000));
-    aStore += a;
-  }
-
-  public void runFastAtan2Test(float argRandom) {
-    float a = MathUtils.fastAtan2(argRandom, MathUtils.randomFloat(-10000, 10000));
-    aStore += a;
-  }
-
-  public void runCeilTest(float argRandom) {
-    float a = (float) StrictMath.ceil(argRandom);
-    aStore += a;
-  }
-
-  public void runFastCeilTest(float argRandom) {
-    float a = MathUtils.fastCeil(argRandom);
-    aStore += a;
-  }
-
-  @Override
-  public String getTestName(int argNum) {
-    return tests[argNum];
-  }
-
-  public static void main(String[] c) {
-    MathPerf p = new MathPerf();
-    p.go();
-  }
 }

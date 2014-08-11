@@ -21,8 +21,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.jbox2d.testbed.framework;
 
-public interface TestbedErrorHandler {
-  void serializationError(Exception e, String message);
+using System;
+
+namespace SharpBox2D.TestBed.Framework
+{
+
+    public interface TestbedErrorHandler
+    {
+        void serializationError(Exception e, string message);
+    }
 }

@@ -164,7 +164,7 @@ namespace SharpBox2D.TestBed.Profile
 
         public virtual void printf(string s, params object[] args)
         {
-            Console.WriteLine(String.Format(s, args));
+            Console.WriteLine(string.Format(s, args));
         }
     }
 }

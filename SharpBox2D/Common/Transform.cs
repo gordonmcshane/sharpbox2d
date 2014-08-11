@@ -61,11 +61,10 @@ namespace SharpBox2D.Common
 
         /** Set this to equal another transform. */
 
-        public Transform set(Transform xf)
+        public void set(Transform xf)
         {
             p.set(xf.p);
             q.set(xf.q);
-            return this;
         }
 
         /**
@@ -103,7 +102,7 @@ namespace SharpBox2D.Common
 
         public static void mulToOutUnsafe(Transform T, Vec2 v, ref Vec2 v2)
         {
-            Debug.Assert(v != v2);
+            //Debug.Assert(v != v2);
             v2.x = (T.q.c*v.x - T.q.s*v.y) + T.p.x;
             v2.y = (T.q.s*v.x + T.q.c*v.y) + T.p.y;
         }
@@ -165,7 +164,8 @@ namespace SharpBox2D.Common
         {
             Transform C = new Transform();
             Rot.mulTransUnsafe(A.q, B.q, ref C.q);
-            pool.set(B.p).subLocal(A.p);
+            pool.set(B.p);
+            pool.subLocal(A.p);
             Rot.mulTransUnsafe(A.q, pool, ref C.p);
             return C;
         }
@@ -174,7 +174,8 @@ namespace SharpBox2D.Common
         {
             Debug.Assert(tOut != A);
             Rot.mulTrans(A.q, B.q, ref tOut.q);
-            pool.set(B.p).subLocal(A.p);
+            pool.set(B.p);
+            pool.subLocal(A.p);
             Rot.mulTrans(A.q, pool, ref tOut.p);
         }
 
@@ -183,7 +184,8 @@ namespace SharpBox2D.Common
             Debug.Assert(tOut != A);
             Debug.Assert(tOut != B);
             Rot.mulTransUnsafe(A.q, B.q, ref tOut.q);
-            pool.set(B.p).subLocal(A.p);
+            pool.set(B.p);
+            pool.subLocal(A.p);
             Rot.mulTransUnsafe(A.q, pool, ref tOut.p);
         }
 

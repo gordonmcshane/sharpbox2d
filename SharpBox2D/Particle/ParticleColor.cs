@@ -26,12 +26,12 @@ namespace SharpBox2D.Particle
             set(r, g, b, a);
         }
 
-        public ParticleColor(Color3f color)
+        public ParticleColor(Color4f color)
         {
             set(color);
         }
 
-        public void set(Color3f color)
+        public void set(Color4f color)
         {
             r = (byte) (255*color.x);
             g = (byte) (255*color.y);

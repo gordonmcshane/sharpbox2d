@@ -66,12 +66,11 @@ namespace SharpBox2D.Common
             return this;
         }
 
-        public Vec3 addLocal(Vec3 argVec)
+        public void addLocal(Vec3 argVec)
         {
             x += argVec.x;
             y += argVec.y;
             z += argVec.z;
-            return this;
         }
 
         public Vec3 add(Vec3 argVec)
@@ -79,12 +78,11 @@ namespace SharpBox2D.Common
             return new Vec3(x + argVec.x, y + argVec.y, z + argVec.z);
         }
 
-        public Vec3 subLocal(Vec3 argVec)
+        public void subLocal(Vec3 argVec)
         {
             x -= argVec.x;
             y -= argVec.y;
             z -= argVec.z;
-            return this;
         }
 
         public Vec3 sub(Vec3 argVec)
@@ -92,12 +90,11 @@ namespace SharpBox2D.Common
             return new Vec3(x - argVec.x, y - argVec.y, z - argVec.z);
         }
 
-        public Vec3 mulLocal(float argScalar)
+        public void mulLocal(float argScalar)
         {
             x *= argScalar;
             y *= argScalar;
             z *= argScalar;
-            return this;
         }
 
         public Vec3 mul(float argScalar)
@@ -110,12 +107,11 @@ namespace SharpBox2D.Common
             return new Vec3(-x, -y, -z);
         }
 
-        public Vec3 negateLocal()
+        public void negateLocal()
         {
             x = -x;
             y = -y;
             z = -z;
-            return this;
         }
 
         public void setZero()

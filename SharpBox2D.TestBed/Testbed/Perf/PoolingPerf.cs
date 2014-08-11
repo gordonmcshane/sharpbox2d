@@ -24,13 +24,16 @@
 /**
  * Created at 8:05:23 AM Jan 18, 2011
  */
-package org.jbox2d.testbed.perf;
+using System;
+using System.Threading;
+using SharpBox2D.Common;
+using SharpBox2D.Pooling;
+using SharpBox2D.Pooling.Normal;
+using SharpBox2D.TestBed.Profile;
 
-import org.jbox2d.common.MathUtils;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.pooling.IWorldPool;
-import org.jbox2d.pooling.normal.DefaultWorldPool;
-import org.jbox2d.profile.BasicPerformanceTest;
+namespace SharpBox2D.TestBed.Perf
+{
+
 
 //Test Name               Milliseconds Avg
 //Creation                         70.6609
@@ -61,174 +64,210 @@ import org.jbox2d.profile.BasicPerformanceTest;
 /**
  * @author Daniel Murphy
  */
-public class PoolingPerf extends BasicPerformanceTest {
-  public static final int INNER_ITERS = 50000;
-  public static final int OUTER_ITERS = 1000;
 
-  public static class CirclePool {
-    final Vec2[] pool;
-    int index;
-    final int length;
+    public class PoolingPerf : BasicPerformanceTest
+    {
+        public static int INNER_ITERS = 50000;
+        public static int OUTER_ITERS = 1000;
 
-    public CirclePool() {
-      pool = new Vec2[200];
-      for (int i = 0; i < pool.length; i++) {
-        pool[i] = new Vec2();
-      }
-      length = 200;
-      index = -1;
+        public class CirclePool
+        {
+            private Vec2[] pool;
+            private int index;
+            private int Length;
+
+            public CirclePool()
+            {
+                pool = new Vec2[200];
+                for (int i = 0; i < pool.Length; i++)
+                {
+                    pool[i] = new Vec2();
+                }
+                Length = 200;
+                index = -1;
+            }
+
+            public Vec2 get()
+            {
+                index++;
+                if (index >= Length)
+                {
+                    index = 0;
+                }
+                return pool[index];
+            }
+        }
+
+        public class CustStack
+        {
+            private Vec2[] pool;
+            private int index;
+
+            public CustStack()
+            {
+                pool = new Vec2[50];
+                for (int i = 0; i < pool.Length; i++)
+                {
+                    pool[i] = new Vec2();
+                }
+                index = 0;
+            }
+
+            public Vec2 get()
+            {
+                return pool[index++];
+            }
+
+            public void reduce(int i)
+            {
+                index -= i;
+            }
+        }
+
+        public class TLVec2 : ThreadLocal<Vec2>
+        {
+
+            public TLVec2() : base(() => new Vec2())
+            {
+            }
+
+        }
+
+        public string[] tests = new string[]
+        {
+            "Creation", "World Pool", "Circle Pool", "Custom Stack",
+            "ThreadLocal member", "Member"
+        };
+
+        public float aStore = 0;
+        public IWorldPool wp = new DefaultWorldPool(100, 10);
+        public CirclePool cp = new CirclePool();
+        public TLVec2 tlv = new TLVec2();
+        public Vec2 mv = new Vec2();
+        public CustStack stack = new CustStack();
+
+        public PoolingPerf() :
+            base(6, OUTER_ITERS, INNER_ITERS)
+        {
+        }
+
+        public float op(Vec2 argVec)
+        {
+            argVec.set(MathUtils.randomFloat(-100, 100), MathUtils.randomFloat(-100, 100));
+            argVec.mulLocal(3.2f);
+            float s = argVec.length();
+            argVec.normalize();
+            return s;
+        }
+
+
+        public override void step(int argNum)
+        {
+            switch (argNum)
+            {
+                case 0:
+                    runCreationTest();
+                    break;
+                case 1:
+                    runWorldPoolTest();
+                    break;
+                case 2:
+                    runCirclePoolTest();
+                    break;
+                case 3:
+                    runCustStackTest();
+                    break;
+                case 4:
+                    runThreadLocalTest();
+                    break;
+                case 5:
+                    runMemberTest();
+                    break;
+            }
+        }
+
+        public void runCreationTest()
+        {
+            Vec2 v;
+            float a = 0;
+            for (int i = 0; i < INNER_ITERS; i++)
+            {
+                v = new Vec2();
+                a += op(v);
+            }
+            aStore += a;
+        }
+
+        public void runWorldPoolTest()
+        {
+            Vec2 v;
+            float a = 0;
+            for (int i = 0; i < INNER_ITERS; i++)
+            {
+                v = wp.popVec2();
+                a += op(v);
+                wp.pushVec2(1);
+            }
+            aStore += a;
+        }
+
+        public void runCirclePoolTest()
+        {
+            Vec2 v;
+            float a = 0;
+            for (int i = 0; i < INNER_ITERS; i++)
+            {
+                v = cp.get();
+                a += op(v);
+            }
+            aStore += a;
+        }
+
+        public void runThreadLocalTest()
+        {
+            Vec2 v;
+            float a = 0;
+            for (int i = 0; i < INNER_ITERS; i++)
+            {
+                v = tlv.Value;
+                a += op(v);
+            }
+            aStore += a;
+        }
+
+        public void runCustStackTest()
+        {
+            Vec2 v;
+            float a = 0;
+            for (int i = 0; i < INNER_ITERS; i++)
+            {
+                v = stack.get();
+                a += op(v);
+                stack.reduce(1);
+            }
+            aStore += a;
+        }
+
+        public void runMemberTest()
+        {
+            float a = 0;
+            for (int i = 0; i < INNER_ITERS; i++)
+            {
+                a += op(mv);
+            }
+            aStore += a;
+        }
+
+
+        public override string getTestName(int argNum)
+        {
+            return tests[argNum];
+        }
+
+        public static void main(string[] c)
+        {
+            PoolingPerf p = new PoolingPerf();
+            p.go();
+        }
     }
-
-    public final Vec2 get() {
-      index++;
-      if (index >= length) {
-        index = 0;
-      }
-      return pool[index];
-    }
-  }
-
-  public static class CustStack {
-    final Vec2[] pool;
-    int index;
-
-    public CustStack() {
-      pool = new Vec2[50];
-      for (int i = 0; i < pool.length; i++) {
-        pool[i] = new Vec2();
-      }
-      index = 0;
-    }
-
-    public final Vec2 get() {
-      return pool[index++];
-    }
-
-    public final void reduce(int i) {
-      index -= i;
-    }
-  }
-
-  public static class TLVec2 extends ThreadLocal<Vec2> {
-    @Override
-    protected Vec2 initialValue() {
-      return new Vec2();
-    }
-  }
-
-  public String[] tests = new String[] {"Creation", "World Pool", "Circle Pool", "Custom Stack",
-      "ThreadLocal member", "Member"};
-
-  public float aStore = 0;
-  public IWorldPool wp = new DefaultWorldPool(100, 10);
-  public CirclePool cp = new CirclePool();
-  public TLVec2 tlv = new TLVec2();
-  public Vec2 mv = new Vec2();
-  public CustStack stack = new CustStack();
-
-  public PoolingPerf() {
-    super(6, OUTER_ITERS, INNER_ITERS);
-  }
-
-  public float op(Vec2 argVec) {
-    argVec.set(MathUtils.randomFloat(-100, 100), MathUtils.randomFloat(-100, 100));
-    argVec.mulLocal(3.2f);
-    float s = argVec.length();
-    argVec.normalize();
-    return s;
-  }
-
-  @Override
-  public void step(int argNum) {
-    switch (argNum) {
-      case 0:
-        runCreationTest();
-        break;
-      case 1:
-        runWorldPoolTest();
-        break;
-      case 2:
-        runCirclePoolTest();
-        break;
-      case 3:
-        runCustStackTest();
-        break;
-      case 4:
-        runThreadLocalTest();
-        break;
-      case 5:
-        runMemberTest();
-        break;
-    }
-  }
-
-  public void runCreationTest() {
-    Vec2 v;
-    float a = 0;
-    for (int i = 0; i < INNER_ITERS; i++) {
-      v = new Vec2();
-      a += op(v);
-    }
-    aStore += a;
-  }
-
-  public void runWorldPoolTest() {
-    Vec2 v;
-    float a = 0;
-    for (int i = 0; i < INNER_ITERS; i++) {
-      v = wp.popVec2();
-      a += op(v);
-      wp.pushVec2(1);
-    }
-    aStore += a;
-  }
-
-  public void runCirclePoolTest() {
-    Vec2 v;
-    float a = 0;
-    for (int i = 0; i < INNER_ITERS; i++) {
-      v = cp.get();
-      a += op(v);
-    }
-    aStore += a;
-  }
-
-  public void runThreadLocalTest() {
-    Vec2 v;
-    float a = 0;
-    for (int i = 0; i < INNER_ITERS; i++) {
-      v = tlv.get();
-      a += op(v);
-    }
-    aStore += a;
-  }
-
-  public void runCustStackTest() {
-    Vec2 v;
-    float a = 0;
-    for (int i = 0; i < INNER_ITERS; i++) {
-      v = stack.get();
-      a += op(v);
-      stack.reduce(1);
-    }
-    aStore += a;
-  }
-
-  public void runMemberTest() {
-    float a = 0;
-    for (int i = 0; i < INNER_ITERS; i++) {
-      a += op(mv);
-    }
-    aStore += a;
-  }
-
-  @Override
-  public String getTestName(int argNum) {
-    return tests[argNum];
-  }
-
-  public static void main(String[] c) {
-    PoolingPerf p = new PoolingPerf();
-    p.go();
-  }
 }

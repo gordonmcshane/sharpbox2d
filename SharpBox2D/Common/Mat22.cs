@@ -189,7 +189,7 @@ namespace SharpBox2D.Common
             return B;
         }
 
-        public Mat22 invertLocal()
+        public void invertLocal()
         {
             float a = ex.x, b = ey.x, c = ex.y, d = ey.y;
             float det = a*d - b*c;
@@ -201,7 +201,6 @@ namespace SharpBox2D.Common
             ey.x = -det*b;
             ex.y = -det*c;
             ey.y = det*a;
-            return this;
         }
 
         public void invertToOut(ref Mat22 m)
@@ -307,10 +306,9 @@ namespace SharpBox2D.Common
             return C;
         }
 
-        public Mat22 mulLocal(Mat22 R)
+        public void mulLocal(Mat22 R)
         {
             mulToOut(R, ref this);
-            return this;
         }
 
         public void mulToOut(Mat22 R, ref Mat22 m)
@@ -360,10 +358,9 @@ namespace SharpBox2D.Common
             return C;
         }
 
-        public Mat22 mulTransLocal(Mat22 B)
+        public void mulTransLocal(Mat22 B)
         {
             mulTransToOut(B, ref this);
-            return this;
         }
 
         public void mulTransToOut(Mat22 B, ref Mat22 m)
@@ -442,7 +439,7 @@ namespace SharpBox2D.Common
    * @return
    */
 
-        public Mat22 addLocal(Mat22 B)
+        public void addLocal(Mat22 B)
         {
             // ex.addLocal(B.ex);
             // col2.addLocal(B.ey);
@@ -450,7 +447,6 @@ namespace SharpBox2D.Common
             ex.y += B.ex.y;
             ey.x += B.ey.x;
             ey.y += B.ey.y;
-            return this;
         }
 
         /**

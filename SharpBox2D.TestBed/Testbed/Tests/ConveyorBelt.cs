@@ -21,101 +21,114 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.Manifold;
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.Fixture;
-import org.jbox2d.dynamics.FixtureDef;
-import org.jbox2d.dynamics.contacts.Contact;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
 
-public class ConveyorBelt extends TestbedTest {
-  private static long platformTag = 98752L;
-  private Fixture m_platform;
-  
-  @Override
-  public Long getTag(Fixture argFixture) {
-    if (argFixture == m_platform) {
-      return platformTag;
-    }
-    return super.getTag(argFixture);
-  }
-  
-  @Override
-  public void processFixture(Fixture argFixture, Long argTag) {
-    if(argTag == platformTag) {
-      m_platform = argFixture;
-      return;
-    }
-    super.processFixture(argFixture, argTag);
-  }
 
-  @Override
-  public boolean isSaveLoadEnabled() {
-    return true;
-  }
-  
-  @Override
-  public void initTest(boolean deserialized) {
-    if(deserialized) {
-      return;
-    }
-    // Ground
+    public class ConveyorBelt : TestbedTest
     {
+        private static long platformTag = 98752L;
+        private Fixture m_platform;
 
-      EdgeShape shape = new EdgeShape();
-      shape.set(new Vec2(-20.0f, 0.0f), new Vec2(20.0f, 0.0f));
-      getGroundBody().createFixture(shape, 0.0f);
+
+        public override long getTag(Fixture argFixture)
+        {
+            if (argFixture == m_platform)
+            {
+                return platformTag;
+            }
+            return base.getTag(argFixture);
+        }
+
+
+        public override void processFixture(Fixture argFixture, long argTag)
+        {
+            if (argTag == platformTag)
+            {
+                m_platform = argFixture;
+                return;
+            }
+            base.processFixture(argFixture, argTag);
+        }
+
+
+        public override bool isSaveLoadEnabled()
+        {
+            return true;
+        }
+
+
+        public override void initTest(bool deserialized)
+        {
+            if (deserialized)
+            {
+                return;
+            }
+            // Ground
+            {
+
+                EdgeShape shape = new EdgeShape();
+                shape.set(new Vec2(-20.0f, 0.0f), new Vec2(20.0f, 0.0f));
+                getGroundBody().createFixture(shape, 0.0f);
+            }
+
+            // Platform
+            {
+                BodyDef bd = new BodyDef();
+                bd.position.set(-5.0f, 5.0f);
+                Body body = getWorld().createBody(bd);
+
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(10.0f, 0.5f);
+
+                FixtureDef fd = new FixtureDef();
+                fd.shape = shape;
+                fd.friction = 0.8f;
+                m_platform = body.createFixture(fd);
+            }
+
+            // Boxes
+            for (int i = 0; i < 5; ++i)
+            {
+                BodyDef bd = new BodyDef();
+                bd.type = BodyType.DYNAMIC;
+                bd.position.set(-10.0f + 2.0f*i, 7.0f);
+                Body body = m_world.createBody(bd);
+
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(0.5f, 0.5f);
+                body.createFixture(shape, 20.0f);
+            }
+        }
+
+
+        public override void preSolve(Contact contact, Manifold oldManifold)
+        {
+            base.preSolve(contact, oldManifold);
+
+            Fixture fixtureA = contact.getFixtureA();
+            Fixture fixtureB = contact.getFixtureB();
+
+            if (fixtureA == m_platform || fixtureB == m_platform)
+            {
+                contact.setTangentSpeed(5.0f);
+            }
+        }
+
+
+        public override string getTestName()
+        {
+            return "Conveyor Belt";
+        }
     }
-
-    // Platform
-    {
-      BodyDef bd = new BodyDef();
-      bd.position.set(-5.0f, 5.0f);
-      Body body = getWorld().createBody(bd);
-
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(10.0f, 0.5f);
-
-      FixtureDef fd = new FixtureDef();
-      fd.shape = shape;
-      fd.friction = 0.8f;
-      m_platform = body.createFixture(fd);
-    }
-
-    // Boxes
-    for (int i = 0; i < 5; ++i) {
-      BodyDef bd = new BodyDef();
-      bd.type = BodyType.DYNAMIC;
-      bd.position.set(-10.0f + 2.0f * i, 7.0f);
-      Body body = m_world.createBody(bd);
-
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(0.5f, 0.5f);
-      body.createFixture(shape, 20.0f);
-    }
-  }
-
-  @Override
-  public void preSolve(Contact contact, Manifold oldManifold) {
-    super.preSolve(contact, oldManifold);
-
-    Fixture fixtureA = contact.getFixtureA();
-    Fixture fixtureB = contact.getFixtureB();
-
-    if (fixtureA == m_platform || fixtureB == m_platform) {
-      contact.setTangentSpeed(5.0f);
-    }
-  }
-
-  @Override
-  public String getTestName() {
-    return "Conveyor Belt";
-  }
 }

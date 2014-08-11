@@ -796,11 +796,16 @@ namespace SharpBox2D.Collision
 
             Vec2 A = edgeA.m_vertex1;
             Vec2 B = edgeA.m_vertex2;
-            e.set(B).subLocal(A);
+            e.set(B);
+            e.subLocal(A);
 
             // Barycentric coordinates
-            float u = Vec2.dot(e, temp.set(B).subLocal(Q));
-            float v = Vec2.dot(e, temp.set(Q).subLocal(A));
+            temp.set(B);
+            temp.subLocal(Q);
+            float u = Vec2.dot(e, temp);
+            temp.set(Q);
+            temp.subLocal(A);
+            float v = Vec2.dot(e, temp);
 
             float radius = edgeA.m_radius + circleB.m_radius;
 
@@ -814,7 +819,8 @@ namespace SharpBox2D.Collision
             if (v <= 0.0f)
             {
                 P = A;
-                d.set(Q).subLocal(P);
+                d.set(Q);
+                d.subLocal(P);
                 dd = Vec2.dot(d, d);
 
                 if (dd > radius*radius)
@@ -827,8 +833,11 @@ namespace SharpBox2D.Collision
                 {
                     Vec2 A1 = edgeA.m_vertex0;
                     Vec2 B1 = A;
-                    e1.set(B1).subLocal(A1);
-                    float u1 = Vec2.dot(e1, temp.set(B1).subLocal(Q));
+                    e1.set(B1);
+                    e1.subLocal(A1);
+                    temp.set(B1);
+                    temp.subLocal(Q);
+                    float u1 = Vec2.dot(e1, temp);
 
                     // Is the circle in Region AB of the previous edge?
                     if (u1 > 0.0f)
@@ -853,7 +862,8 @@ namespace SharpBox2D.Collision
             if (u <= 0.0f)
             {
                 P = B;
-                d.set(Q).subLocal(P);
+                d.set(Q);
+                d.subLocal(P);
                 dd = Vec2.dot(d, d);
                 if (dd > radius*radius)
                 {
@@ -866,8 +876,11 @@ namespace SharpBox2D.Collision
                     Vec2 B2 = edgeA.m_vertex3;
                     Vec2 A2 = B;
                     Vec2 e2 = e1;
-                    e2.set(B2).subLocal(A2);
-                    float v2 = Vec2.dot(e2, temp.set(Q).subLocal(A2));
+                    e2.set(B2);
+                    e2.subLocal(A2);
+                    temp.set(Q);
+                    temp.subLocal(A2);
+                    float v2 = Vec2.dot(e2, temp);
 
                     // Is the circle in Region AB of the next edge?
                     if (v2 > 0.0f)
@@ -894,9 +907,13 @@ namespace SharpBox2D.Collision
 
             // Vec2 P = (1.0f / den) * (u * A + v * B);
             P = A;
-            P.mulLocal(u).addLocal(temp.set(B).mulLocal(v));
+            P.mulLocal(u);
+            temp.set(B);
+            temp.mulLocal(v);
+            P.addLocal(temp);
             P.mulLocal(1.0f/den);
-            d.set(Q).subLocal(P);
+            d.set(Q);
+            d.subLocal(P);
             dd = Vec2.dot(d, d);
             if (dd > radius*radius)
             {
@@ -905,7 +922,9 @@ namespace SharpBox2D.Collision
 
             n.x = -e.y;
             n.y = e.x;
-            if (Vec2.dot(n, temp.set(Q).subLocal(A)) < 0.0f)
+            temp.set(Q);
+            temp.subLocal(A);
+            if (Vec2.dot(n, temp) < 0.0f)
             {
                 n.set(-n.x, -n.y);
             }
@@ -1094,31 +1113,40 @@ namespace SharpBox2D.Collision
                 bool hasVertex0 = edgeA.m_hasVertex0;
                 bool hasVertex3 = edgeA.m_hasVertex3;
 
-                edge1.set(m_v2).subLocal(m_v1);
+                edge1.set(m_v2);
+                edge1.subLocal(m_v1);
                 edge1.normalize();
                 m_normal1.set(edge1.y, -edge1.x);
-                float offset1 = Vec2.dot(m_normal1, temp.set(m_centroidB).subLocal(m_v1));
+                temp.set(m_centroidB);
+                temp.subLocal(m_v1);
+                float offset1 = Vec2.dot(m_normal1, temp);
                 float offset0 = 0.0f, offset2 = 0.0f;
                 bool convex1 = false, convex2 = false;
 
                 // Is there a preceding edge?
                 if (hasVertex0)
                 {
-                    edge0.set(m_v1).subLocal(m_v0);
+                    edge0.set(m_v1);
+                    edge0.subLocal(m_v0);
                     edge0.normalize();
                     m_normal0.set(edge0.y, -edge0.x);
                     convex1 = Vec2.cross(edge0, edge1) >= 0.0f;
-                    offset0 = Vec2.dot(m_normal0, temp.set(m_centroidB).subLocal(m_v0));
+                    temp.set(m_centroidB);
+                    temp.subLocal(m_v0);
+                    offset0 = Vec2.dot(m_normal0, temp);
                 }
 
                 // Is there a following edge?
                 if (hasVertex3)
                 {
-                    edge2.set(m_v3).subLocal(m_v2);
+                    edge2.set(m_v3);
+                    edge2.subLocal(m_v2);
                     edge2.normalize();
                     m_normal2.set(edge2.y, -edge2.x);
                     convex2 = Vec2.cross(edge1, edge2) > 0.0f;
-                    offset2 = Vec2.dot(m_normal2, temp.set(m_centroidB).subLocal(m_v2));
+                    temp.set(m_centroidB);
+                    temp.subLocal(m_v2);
+                    offset2 = Vec2.dot(m_normal2,temp);
                 }
 
                 // Determine front or back collision. Determine collision normal limits.
@@ -1428,7 +1456,8 @@ namespace SharpBox2D.Collision
                         rf.i2 = 0;
                         rf.v1.set(m_v2);
                         rf.v2.set(m_v1);
-                        rf.normal.set(m_normal1).negateLocal();
+                        rf.normal.set(m_normal1);
+                        rf.normal.negateLocal();
                     }
                 }
                 else
@@ -1455,7 +1484,8 @@ namespace SharpBox2D.Collision
                 }
 
                 rf.sideNormal1.set(rf.normal.y, -rf.normal.x);
-                rf.sideNormal2.set(rf.sideNormal1).negateLocal();
+                rf.sideNormal2.set(rf.sideNormal1);
+                rf.sideNormal2.negateLocal();
                 rf.sideOffset1 = Vec2.dot(rf.sideNormal1, rf.v1);
                 rf.sideOffset2 = Vec2.dot(rf.sideNormal2, rf.v2);
 
@@ -1494,8 +1524,9 @@ namespace SharpBox2D.Collision
                 for (int i = 0; i < Settings.maxManifoldPoints; ++i)
                 {
                     float separation;
-
-                    separation = Vec2.dot(rf.normal, temp.set(clipPoints2[i].v).subLocal(rf.v1));
+                    temp.set(clipPoints2[i].v);
+                    temp.subLocal(rf.v1);
+                    separation = Vec2.dot(rf.normal, temp);
 
                     if (separation <= m_radius)
                     {
@@ -1586,14 +1617,18 @@ namespace SharpBox2D.Collision
                     // Adjacency
                     if (n.x*perp.x + n.y*perp.y >= 0.0f)
                     {
-                        if (Vec2.dot(temp.set(n).subLocal(m_upperLimit), m_normal) < -Settings.angularSlop)
+                        temp.set(n);
+                        temp.subLocal(m_upperLimit);
+                        if (Vec2.dot(temp, m_normal) < -Settings.angularSlop)
                         {
                             continue;
                         }
                     }
                     else
                     {
-                        if (Vec2.dot(temp.set(n).subLocal(m_lowerLimit), m_normal) < -Settings.angularSlop)
+                        temp.set(n);
+                        temp.subLocal(m_lowerLimit);
+                        if (Vec2.dot(temp, m_normal) < -Settings.angularSlop)
                         {
                             continue;
                         }

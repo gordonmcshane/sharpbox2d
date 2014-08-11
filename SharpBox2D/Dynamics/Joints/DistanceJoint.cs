@@ -205,9 +205,16 @@ namespace SharpBox2D.Dynamics.Joints
             qB.set(aB);
 
             // use m_u as temporary variable
-            Rot.mulToOutUnsafe(qA, m_u.set(m_localAnchorA).subLocal(m_localCenterA), ref m_rA);
-            Rot.mulToOutUnsafe(qB, m_u.set(m_localAnchorB).subLocal(m_localCenterB), ref m_rB);
-            m_u.set(cB).addLocal(m_rB).subLocal(cA).subLocal(m_rA);
+            m_u.set(m_localAnchorA);
+            m_u.subLocal(m_localCenterA);
+            Rot.mulToOutUnsafe(qA, m_u, ref m_rA);
+            m_u.set(m_localAnchorB);
+            m_u.subLocal(m_localCenterB);
+            Rot.mulToOutUnsafe(qB, m_u, ref m_rB);
+            m_u.set(cB);
+            m_u.addLocal(m_rB);
+            m_u.subLocal(cA);
+            m_u.subLocal(m_rA);
 
             pool.pushRot(2);
 
@@ -265,7 +272,8 @@ namespace SharpBox2D.Dynamics.Joints
                 m_impulse *= data.step.dtRatio;
 
                 Vec2 P = pool.popVec2();
-                P.set(m_u).mulLocal(m_impulse);
+                P.set(m_u);
+                P.mulLocal(m_impulse);
 
                 vA.x -= m_invMassA*P.x;
                 vA.y -= m_invMassA*P.y;
@@ -303,7 +311,8 @@ namespace SharpBox2D.Dynamics.Joints
             vpA.addLocal(vA);
             Vec2.crossToOutUnsafe(wB, m_rB, ref vpB);
             vpB.addLocal(vB);
-            float Cdot = Vec2.dot(m_u, vpB.subLocal(vpA));
+            vpB.subLocal(vpA);
+            float Cdot = Vec2.dot(m_u, vpB);
 
             float impulse = -m_mass*(Cdot + m_bias + m_gamma*m_impulse);
             m_impulse += impulse;
@@ -348,9 +357,19 @@ namespace SharpBox2D.Dynamics.Joints
             qA.set(aA);
             qB.set(aB);
 
-            Rot.mulToOutUnsafe(qA, u.set(m_localAnchorA).subLocal(m_localCenterA), ref rA);
-            Rot.mulToOutUnsafe(qB, u.set(m_localAnchorB).subLocal(m_localCenterB), ref rB);
-            u.set(cB).addLocal(rB).subLocal(cA).subLocal(rA);
+            u.set(m_localAnchorA);
+            u.subLocal(m_localCenterA);
+
+            Rot.mulToOutUnsafe(qA, u , ref rA);
+
+            u.set(m_localAnchorB);
+            u.subLocal(m_localCenterB);
+
+            Rot.mulToOutUnsafe(qB, u, ref rB);
+            u.set(cB);
+            u.addLocal(rB);
+            u.subLocal(cA);
+            u.subLocal(rA);
 
 
             float length = u.normalize();

@@ -50,7 +50,7 @@ namespace SharpBox2D.TestBed.Tests.Math
             for (int i = 0; i < tableLength; i++)
             {
                 sinLUT[i] = (float)System.Math.Sin(i * precision);
-                //cosLUT[i] = (float) Math.cos( i * precision);
+                //cosLUT[i] = (float) System.Math.Cos( i * precision);
             }
         }
 

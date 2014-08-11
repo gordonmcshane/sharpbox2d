@@ -24,71 +24,84 @@
 /**
  * Created at 5:36:06 PM Jul 17, 2010
  */
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
+
 
 /**
  * @author Daniel Murphy
  */
-public class PyramidTest extends TestbedTest {
 
-  @Override
-  public boolean isSaveLoadEnabled() {
-    return true;
-  }
-
-  @Override
-  public void initTest(boolean deserialized) {
-    if (deserialized) {
-      return;
-    }
-    int count = 20;
+    public class PyramidTest : TestbedTest
     {
-      BodyDef bd = new BodyDef();
-      Body ground = getWorld().createBody(bd);
 
-      EdgeShape shape = new EdgeShape();
-      shape.set(new Vec2(-40.0f, 0f), new Vec2(40.0f, 0f));
-      ground.createFixture(shape, 0.0f);
 
-    }
-
-    {
-      float a = .5f;
-      PolygonShape shape = new PolygonShape();
-      shape.setAsBox(a, a);
-
-      Vec2 x = new Vec2(-7.0f, 0.75f);
-      Vec2 y = new Vec2();
-      Vec2 deltaX = new Vec2(0.5625f, 1.25f);
-      Vec2 deltaY = new Vec2(1.125f, 0.0f);
-
-      for (int i = 0; i < count; ++i) {
-        y.set(x);
-
-        for (int j = i; j < count; ++j) {
-          BodyDef bd = new BodyDef();
-          bd.type = BodyType.DYNAMIC;
-          bd.position.set(y);
-          Body body = getWorld().createBody(bd);
-          body.createFixture(shape, 5.0f);
-          y.addLocal(deltaY);
+        public override bool isSaveLoadEnabled()
+        {
+            return true;
         }
 
-        x.addLocal(deltaX);
-      }
-    }
-  }
 
-  @Override
-  public String getTestName() {
-    return "Pyramid";
-  }
+        public override void initTest(bool deserialized)
+        {
+            if (deserialized)
+            {
+                return;
+            }
+            int count = 20;
+            {
+                BodyDef bd = new BodyDef();
+                Body ground = getWorld().createBody(bd);
+
+                EdgeShape shape = new EdgeShape();
+                shape.set(new Vec2(-40.0f, 0f), new Vec2(40.0f, 0f));
+                ground.createFixture(shape, 0.0f);
+
+            }
+
+            {
+                float a = .5f;
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(a, a);
+
+                Vec2 x = new Vec2(-7.0f, 0.75f);
+                Vec2 y = new Vec2();
+                Vec2 deltaX = new Vec2(0.5625f, 1.25f);
+                Vec2 deltaY = new Vec2(1.125f, 0.0f);
+
+                for (int i = 0; i < count; ++i)
+                {
+                    y.set(x);
+
+                    for (int j = i; j < count; ++j)
+                    {
+                        BodyDef bd = new BodyDef();
+                        bd.type = BodyType.DYNAMIC;
+                        bd.position.set(y);
+                        Body body = getWorld().createBody(bd);
+                        body.createFixture(shape, 5.0f);
+                        y.addLocal(deltaY);
+                    }
+
+                    x.addLocal(deltaX);
+                }
+            }
+        }
+
+
+        public override string getTestName()
+        {
+            return "Pyramid";
+        }
+    }
 }

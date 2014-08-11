@@ -34,13 +34,16 @@ namespace SharpBox2D.Pooling.Normal
         private int index;
         private int size;
 
-        protected MutableStack(int argInitSize)
+        protected MutableStack(int argInitSize, Func<E> factoryM)
         {
             index = 0;
             stack = null;
             index = 0;
+            FactoryMethod = factoryM;
             extendStack(argInitSize);
         }
+
+        protected Func<E> FactoryMethod;
 
         private void extendStack(int argSize)
         {

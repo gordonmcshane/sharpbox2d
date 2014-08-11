@@ -989,7 +989,7 @@ namespace SharpBox2D.Collision.Broadphase
             drawTree(argDraw, m_root, 0, height);
         }
 
-        private Color3f color = new Color3f();
+        private Color4f color = new Color4f();
         private Vec2 textVec = new Vec2();
 
         public void drawTree(DebugDraw argDraw, DynamicTreeNode node, int spot, int height)

@@ -398,7 +398,8 @@ namespace SharpBox2D.Collision
                 localPointB.set(m_proxyB.getVertex(cache.indexB[0]));
                 Transform.mulToOutUnsafe(xfa, localPointA, ref pointA);
                 Transform.mulToOutUnsafe(xfb, localPointB, ref pointB);
-                m_axis.set(pointB).subLocal(pointA);
+                m_axis.set(pointB);
+                m_axis.subLocal(pointA);
                 float s = m_axis.normalize();
                 return s;
             }
@@ -410,19 +411,23 @@ namespace SharpBox2D.Collision
                 localPointB1.set(m_proxyB.getVertex(cache.indexB[0]));
                 localPointB2.set(m_proxyB.getVertex(cache.indexB[1]));
 
-                temp.set(localPointB2).subLocal(localPointB1);
+                temp.set(localPointB2);
+                temp.subLocal(localPointB1);
                 Vec2.crossToOutUnsafe(temp, 1f, ref m_axis);
                 m_axis.normalize();
 
                 Rot.mulToOutUnsafe(xfb.q, m_axis, ref normal);
 
-                m_localPoint.set(localPointB1).addLocal(localPointB2).mulLocal(.5f);
+                m_localPoint.set(localPointB1);
+                m_localPoint.addLocal(localPointB2);
+                m_localPoint.mulLocal(.5f);
                 Transform.mulToOutUnsafe(xfb, m_localPoint, ref pointB);
 
                 localPointA.set(proxyA.getVertex(cache.indexA[0]));
                 Transform.mulToOutUnsafe(xfa, localPointA, ref pointA);
 
-                temp.set(pointA).subLocal(pointB);
+                temp.set(pointA);
+                temp.subLocal(pointB);
                 float s = Vec2.dot(temp, normal);
                 if (s < 0.0f)
                 {
@@ -439,19 +444,24 @@ namespace SharpBox2D.Collision
                 localPointA1.set(m_proxyA.getVertex(cache.indexA[0]));
                 localPointA2.set(m_proxyA.getVertex(cache.indexA[1]));
 
-                temp.set(localPointA2).subLocal(localPointA1);
+                temp.set(localPointA2);
+                temp.subLocal(localPointA1);
                 Vec2.crossToOutUnsafe(temp, 1.0f, ref m_axis);
                 m_axis.normalize();
 
                 Rot.mulToOutUnsafe(xfa.q, m_axis, ref normal);
 
-                m_localPoint.set(localPointA1).addLocal(localPointA2).mulLocal(.5f);
+                m_localPoint.set(localPointA1);
+                m_localPoint.addLocal(localPointA2);
+                m_localPoint.mulLocal(.5f);
+
                 Transform.mulToOutUnsafe(xfa, m_localPoint, ref pointA);
 
                 localPointB.set(m_proxyB.getVertex(cache.indexB[0]));
                 Transform.mulToOutUnsafe(xfb, localPointB, ref pointB);
 
-                temp.set(pointB).subLocal(pointA);
+                temp.set(pointB);
+                temp.subLocal(pointA);
                 float s = Vec2.dot(temp, normal);
                 if (s < 0.0f)
                 {
@@ -477,7 +487,8 @@ namespace SharpBox2D.Collision
                 case TOIType.POINTS:
                 {
                     Rot.mulTransUnsafe(xfa.q, m_axis, ref axisA);
-                    Rot.mulTransUnsafe(xfb.q, m_axis.negateLocal(), ref axisB);
+                    m_axis.negateLocal();
+                    Rot.mulTransUnsafe(xfb.q, m_axis, ref axisB);
                     m_axis.negateLocal();
 
                     indexes[0] = m_proxyA.getSupport(axisA);
@@ -488,16 +499,18 @@ namespace SharpBox2D.Collision
 
                     Transform.mulToOutUnsafe(xfa, localPointA, ref pointA);
                     Transform.mulToOutUnsafe(xfb, localPointB, ref pointB);
-
-                    float separation = Vec2.dot(pointB.subLocal(pointA), m_axis);
+                    
+                    pointB.subLocal(pointA);
+                    float separation = Vec2.dot(pointB, m_axis);
                     return separation;
                 }
                 case TOIType.FACE_A:
                 {
                     Rot.mulToOutUnsafe(xfa.q, m_axis, ref normal);
                     Transform.mulToOutUnsafe(xfa, m_localPoint, ref pointA);
-
-                    Rot.mulTransUnsafe(xfb.q, normal.negateLocal(), ref axisB);
+                    
+                    normal.negateLocal();
+                    Rot.mulTransUnsafe(xfb.q, normal, ref axisB);
                     normal.negateLocal();
 
                     indexes[0] = -1;
@@ -506,15 +519,16 @@ namespace SharpBox2D.Collision
                     localPointB.set(m_proxyB.getVertex(indexes[1]));
                     Transform.mulToOutUnsafe(xfb, localPointB, ref pointB);
 
-                    float separation = Vec2.dot(pointB.subLocal(pointA), normal);
+                    pointB.subLocal(pointA);
+                    float separation = Vec2.dot(pointB, normal);
                     return separation;
                 }
                 case TOIType.FACE_B:
                 {
                     Rot.mulToOutUnsafe(xfb.q, m_axis, ref normal);
                     Transform.mulToOutUnsafe(xfb, m_localPoint, ref pointB);
-
-                    Rot.mulTransUnsafe(xfa.q, normal.negateLocal(), ref axisA);
+                    normal.negateLocal();
+                    Rot.mulTransUnsafe(xfa.q,  normal, ref axisA);
                     normal.negateLocal();
 
                     indexes[1] = -1;
@@ -523,7 +537,8 @@ namespace SharpBox2D.Collision
                     localPointA.set(m_proxyA.getVertex(indexes[0]));
                     Transform.mulToOutUnsafe(xfa, localPointA, ref pointA);
 
-                    float separation = Vec2.dot(pointA.subLocal(pointB), normal);
+                    pointA.subLocal(pointB);
+                    float separation = Vec2.dot(pointA, normal);
                     return separation;
                 }
                 default:
@@ -544,7 +559,8 @@ namespace SharpBox2D.Collision
                 case TOIType.POINTS:
                 {
                     Rot.mulTransUnsafe(xfa.q, m_axis, ref axisA);
-                    Rot.mulTransUnsafe(xfb.q, m_axis.negateLocal(), ref axisB);
+                    m_axis.negateLocal();
+                    Rot.mulTransUnsafe(xfb.q, m_axis, ref axisB);
                     m_axis.negateLocal();
 
                     localPointA.set(m_proxyA.getVertex(indexA));
@@ -553,7 +569,8 @@ namespace SharpBox2D.Collision
                     Transform.mulToOutUnsafe(xfa, localPointA, ref pointA);
                     Transform.mulToOutUnsafe(xfb, localPointB, ref pointB);
 
-                    float separation = Vec2.dot(pointB.subLocal(pointA), m_axis);
+                    pointB.subLocal(pointA);
+                    float separation = Vec2.dot(pointB, m_axis);
                     return separation;
                 }
                 case TOIType.FACE_A:
@@ -561,26 +578,30 @@ namespace SharpBox2D.Collision
                     Rot.mulToOutUnsafe(xfa.q, m_axis, ref normal);
                     Transform.mulToOutUnsafe(xfa, m_localPoint, ref pointA);
 
-                    Rot.mulTransUnsafe(xfb.q, normal.negateLocal(), ref axisB);
+                    normal.negateLocal();
+                    Rot.mulTransUnsafe(xfb.q, normal , ref axisB);
                     normal.negateLocal();
 
                     localPointB.set(m_proxyB.getVertex(indexB));
                     Transform.mulToOutUnsafe(xfb, localPointB, ref pointB);
-                    float separation = Vec2.dot(pointB.subLocal(pointA), normal);
+                    pointB.subLocal(pointA);
+                    float separation = Vec2.dot(pointB, normal);
                     return separation;
                 }
                 case TOIType.FACE_B:
                 {
                     Rot.mulToOutUnsafe(xfb.q, m_axis, ref normal);
                     Transform.mulToOutUnsafe(xfb, m_localPoint, ref pointB);
-
-                    Rot.mulTransUnsafe(xfa.q, normal.negateLocal(), ref axisA);
+                    normal.negateLocal();
+                    Rot.mulTransUnsafe(xfa.q, normal, ref axisA);
                     normal.negateLocal();
 
                     localPointA.set(m_proxyA.getVertex(indexA));
                     Transform.mulToOutUnsafe(xfa, localPointA, ref pointA);
-
-                    float separation = Vec2.dot(pointA.subLocal(pointB), normal);
+                    
+                    pointA.subLocal(pointB);
+                    float separation = Vec2.dot(pointA, normal);
+                    
                     return separation;
                 }
                 default:

@@ -95,7 +95,8 @@ namespace SharpBox2D.Dynamics.Joints
 
         public override void getReactionForce(float invDt, ref Vec2 argOut)
         {
-            argOut.set(m_impulse).mulLocal(invDt);
+            argOut.set(m_impulse);
+            argOut.mulLocal(invDt);
         }
 
         public override float getReactionTorque(float invDt)
@@ -191,9 +192,11 @@ namespace SharpBox2D.Dynamics.Joints
             m_beta = h*k*m_gamma;
 
             Vec2 temp = pool.popVec2();
+            temp.set(m_localAnchorB);
+            temp.subLocal(m_localCenterB);
 
             // Compute the effective mass matrix.
-            Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_localCenterB), ref m_rB);
+            Rot.mulToOutUnsafe(qB, temp, ref m_rB);
 
             // K = [(1/m1 + 1/m2) * eye(2) - skew(r1) * invI1 * skew(r1) - skew(r2) * invI2 * skew(r2)]
             // = [1/m1+1/m2 0 ] + invI1 * [r1.y*r1.y -r1.x*r1.y] + invI2 * [r1.y*r1.y -r1.x*r1.y]
@@ -206,7 +209,9 @@ namespace SharpBox2D.Dynamics.Joints
 
             K.invertToOut(ref m_mass);
 
-            m_C.set(cB).addLocal(m_rB).subLocal(m_targetA);
+            m_C.set(cB);
+            m_C.addLocal(m_rB);
+            m_C.subLocal(m_targetA);
             m_C.mulLocal(m_beta);
 
             // Cheat with some damping
@@ -251,7 +256,11 @@ namespace SharpBox2D.Dynamics.Joints
             Vec2 impulse = pool.popVec2();
             Vec2 temp = pool.popVec2();
 
-            temp.set(m_impulse).mulLocal(m_gamma).addLocal(m_C).addLocal(Cdot).negateLocal();
+            temp.set(m_impulse);
+            temp.mulLocal(m_gamma);
+            temp.addLocal(m_C);
+            temp.addLocal(Cdot);
+            temp.negateLocal();
             Mat22.mulToOutUnsafe(m_mass, temp, ref impulse);
 
             Vec2 oldImpulse = temp;
@@ -262,7 +271,8 @@ namespace SharpBox2D.Dynamics.Joints
             {
                 m_impulse.mulLocal(maxImpulse/m_impulse.length());
             }
-            impulse.set(m_impulse).subLocal(oldImpulse);
+            impulse.set(m_impulse);
+            impulse.subLocal(oldImpulse);
 
             vB.x += m_invMassB*impulse.x;
             vB.y += m_invMassB*impulse.y;

@@ -44,17 +44,15 @@ namespace SharpBox2D.Pooling.Normal
     internal class ContactStack<CType> : MutableStack<Contact> where CType : Contact
     {
         private IWorldPool pool;
-        private Func<IWorldPool, CType> _factoryM;
 
-        public ContactStack(IWorldPool pool, Func<IWorldPool, CType> factoryM, int argInitSize) : base(argInitSize)
+        public ContactStack(IWorldPool pool, Func<IWorldPool, CType> factoryM, int argInitSize) : base(argInitSize, () => factoryM(pool))
         {
-            this.pool = pool;
-            _factoryM = factoryM;
+            this.pool = pool;          
         }
 
         protected override Contact newInstance()
         {
-            return _factoryM(pool);
+            return FactoryMethod();
         }
 
         protected override Contact[] newArray(int size)

@@ -49,27 +49,38 @@ namespace SharpBox2D.Common
 
 // updated to rev 100
 /**
- * Similar to javax.vecmath.Color3f holder
+ * Similar to javax.vecmath.Color4f holder
  * @author ewjordan
  *
  */
-    public struct Color3f
+    public struct Color4f
     {
-        public static readonly Color3f WHITE = new Color3f(1, 1, 1);
-        public static readonly Color3f BLACK = new Color3f(0, 0, 0);
-        public static readonly Color3f BLUE = new Color3f(0, 0, 1);
-        public static readonly Color3f GREEN = new Color3f(0, 1, 0);
-        public static readonly Color3f RED = new Color3f(1, 0, 0);
+        public static readonly Color4f WHITE = new Color4f(1, 1, 1);
+        public static readonly Color4f BLACK = new Color4f(0, 0, 0);
+        public static readonly Color4f BLUE = new Color4f(0, 0, 1);
+        public static readonly Color4f GREEN = new Color4f(0, 1, 0);
+        public static readonly Color4f RED = new Color4f(1, 0, 0);
 
         public float x;
         public float y;
         public float z;
+        public float w;
 
-        public Color3f(float r, float g, float b)
+        public Color4f(float r, float g, float b) : this()
         {
             x = r;
             y = g;
             z = b;
+            w = 1.0f;
+        }
+
+        public Color4f(float r, float g, float b, float a)
+            : this()
+        {
+            x = r;
+            y = g;
+            z = b;
+            w = a;
         }
 
         public void set(float r, float g, float b)
@@ -77,13 +88,23 @@ namespace SharpBox2D.Common
             x = r;
             y = g;
             z = b;
+            
         }
 
-        public void set(Color3f argColor)
+        public void set(float r, float g, float b, float a)
+        {
+            x = r;
+            y = g;
+            z = b;
+            w = a;
+        }
+
+        public void set(Color4f argColor)
         {
             x = argColor.x;
             y = argColor.y;
             z = argColor.z;
+            w = argColor.w;
         }
     }
 }

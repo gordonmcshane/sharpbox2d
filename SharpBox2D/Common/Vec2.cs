@@ -55,20 +55,18 @@ namespace SharpBox2D.Common
 
         /** Set the vector component-wise. */
 
-        public Vec2 set(float x, float y)
+        public void set(float x, float y)
         {
             this.x = x;
             this.y = y;
-            return this;
         }
 
         /** Set this vector to another vector. */
 
-        public Vec2 set(Vec2 v)
+        public void set(Vec2 v)
         {
             this.x = v.x;
             this.y = v.y;
-            return this;
         }
 
         /** Return the sum of this vector and another; does not alter either one. */
@@ -101,47 +99,42 @@ namespace SharpBox2D.Common
 
         /** Flip the vector and return it - alters this vector. */
 
-        public Vec2 negateLocal()
+        public void negateLocal()
         {
             x = -x;
-            y = -y;
-            return this;
+            y = -y;            
         }
 
         /** Add another vector to this one and returns result - alters this vector. */
 
-        public Vec2 addLocal(Vec2 v)
+        public void addLocal(Vec2 v)
         {
             x += v.x;
             y += v.y;
-            return this;
         }
 
         /** Adds values to this vector and returns result - alters this vector. */
 
-        public Vec2 addLocal(float x, float y)
+        public void addLocal(float x, float y)
         {
             this.x += x;
             this.y += y;
-            return this;
         }
 
         /** Subtract another vector from this one and return result - alters this vector. */
 
-        public Vec2 subLocal(Vec2 v)
+        public void subLocal(Vec2 v)
         {
             x -= v.x;
             y -= v.y;
-            return this;
         }
 
         /** Multiply this vector by a number and return result - alters this vector. */
 
-        public Vec2 mulLocal(float a)
+        public void mulLocal(float a)
         {
             x *= a;
             y *= a;
-            return this;
         }
 
         /** Get the skew vector such that dot(skew_vec, other) == cross(vec, other) */

@@ -24,141 +24,157 @@
 /**
  * Created at 12:32:26 AM Aug 15, 2010
  */
-package org.jbox2d.testbed.tests;
+using System;
+using SharpBox2D.Callbacks;
+using SharpBox2D.Collision;
+using SharpBox2D.Collision.Shapes;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
+using SharpBox2D.Dynamics.Contacts;
+using SharpBox2D.Dynamics.Joints;
+using SharpBox2D.TestBed.Framework;
 
-import org.jbox2d.collision.Distance;
-import org.jbox2d.collision.TimeOfImpact;
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.EdgeShape;
-import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.Fixture;
-import org.jbox2d.testbed.framework.TestbedSettings;
-import org.jbox2d.testbed.framework.TestbedTest;
+namespace SharpBox2D.TestBed.Tests
+{
 
 /**
  * @author Daniel Murphy
  */
-public class ContinuousTest extends TestbedTest {
 
-  Body m_body;
-  Fixture currFixture;
-  PolygonShape m_poly;
-  CircleShape m_circle;
-  Shape nextShape = null;
-  boolean polygon = false;
-  float m_angularVelocity;
-
-  @Override
-  public String getTestName() {
-    return "Continuous";
-  }
-
-  public void switchObjects() {
-    if (polygon) {
-      nextShape = m_circle;
-    } else {
-      nextShape = m_poly;
-    }
-    polygon = !polygon;
-  }
-
-  @Override
-  public void initTest(boolean argDeserialized) {
+    public class ContinuousTest : TestbedTest
     {
-      BodyDef bd = new BodyDef();
-      bd.position.set(0.0f, 0.0f);
-      Body body = getWorld().createBody(bd);
 
-      EdgeShape shape = new EdgeShape();
+        private Body m_body;
+        private Fixture currFixture;
+        private PolygonShape m_poly;
+        private CircleShape m_circle;
+        private Shape nextShape = null;
+        private bool polygon = false;
+        private float m_angularVelocity;
 
-      shape.set(new Vec2(-10.0f, 0.0f), new Vec2(10.0f, 0.0f));
-      body.createFixture(shape, 0.0f);
 
-      PolygonShape pshape = new PolygonShape();
-      pshape.setAsBox(0.2f, 1.0f, new Vec2(0.5f, 1.0f), 0.0f);
-      body.createFixture(pshape, 0.0f);
+        public override string getTestName()
+        {
+            return "Continuous";
+        }
+
+        public void switchObjects()
+        {
+            if (polygon)
+            {
+                nextShape = m_circle;
+            }
+            else
+            {
+                nextShape = m_poly;
+            }
+            polygon = !polygon;
+        }
+
+        private Random _random = new Random();
+
+        public override void initTest(bool argDeserialized)
+        {
+            {
+                BodyDef bd = new BodyDef();
+                bd.position.set(0.0f, 0.0f);
+                Body body = getWorld().createBody(bd);
+
+                EdgeShape shape = new EdgeShape();
+
+                shape.set(new Vec2(-10.0f, 0.0f), new Vec2(10.0f, 0.0f));
+                body.createFixture(shape, 0.0f);
+
+                PolygonShape pshape = new PolygonShape();
+                pshape.setAsBox(0.2f, 1.0f, new Vec2(0.5f, 1.0f), 0.0f);
+                body.createFixture(pshape, 0.0f);
+            }
+            m_poly = new PolygonShape();
+            m_poly.setAsBox(2.0f, 0.1f);
+            m_circle = new CircleShape();
+            m_circle.m_p.setZero();
+            m_circle.m_radius = 0.5f;
+
+            BodyDef bd2 = new BodyDef();
+            bd2.type = BodyType.DYNAMIC;
+            bd2.position.set(0.0f, 20.0f);
+
+            m_body = getWorld().createBody(bd2);
+            currFixture = m_body.createFixture(m_poly, 1.0f);
+
+            m_angularVelocity = (float) _random.NextDouble()*100 - 50;
+            m_angularVelocity = 33.468121f;
+            m_body.setLinearVelocity(new Vec2(0.0f, -100.0f));
+            m_body.setAngularVelocity(m_angularVelocity);
+
+            TimeOfImpact.toiCalls = 0;
+            TimeOfImpact.toiIters = 0;
+            TimeOfImpact.toiMaxIters = 0;
+            TimeOfImpact.toiRootIters = 0;
+            TimeOfImpact.toiMaxRootIters = 0;
+        }
+
+        public void launch()
+        {
+            m_body.setTransform(new Vec2(0.0f, 20.0f), 0.0f);
+            m_angularVelocity = (float) _random.NextDouble()*100 - 50;
+            m_body.setLinearVelocity(new Vec2(0.0f, -100.0f));
+            m_body.setAngularVelocity(m_angularVelocity);
+        }
+
+
+        public override void step(TestbedSettings settings)
+        {
+            if (nextShape != null)
+            {
+                m_body.destroyFixture(currFixture);
+                currFixture = m_body.createFixture(nextShape, 1f);
+                nextShape = null;
+            }
+            // if (stepCount == 12){
+            // stepCount += 0;
+            // } what is this?
+
+            base.step(settings);
+
+            if (Distance.GJK_CALLS > 0)
+            {
+                addTextLine(string.Format("gjk calls = {0}, ave gjk iters = {1:F1}, max gjk iters = {2}",
+                    Distance.GJK_CALLS, Distance.GJK_ITERS*(1f/Distance.GJK_CALLS), Distance.GJK_MAX_ITERS));
+            }
+
+            if (TimeOfImpact.toiCalls > 0)
+            {
+                int toiCalls = TimeOfImpact.toiCalls;
+                int toiIters = TimeOfImpact.toiIters;
+                int toiMaxIters = TimeOfImpact.toiMaxIters;
+                int toiRootIters = TimeOfImpact.toiRootIters;
+                int toiMaxRootIters = TimeOfImpact.toiMaxRootIters;
+                addTextLine(string.Format("toi calls = {0}, ave toi iters = %3.1f, max toi iters = {2}",
+                    toiCalls, toiIters*1f/toiCalls, toiMaxIters));
+
+                addTextLine(string.Format("ave toi root iters = {0:F1}, max toi root iters = {1}", toiRootIters
+                                                                                                   *(1f/toiCalls),
+                    toiMaxRootIters));
+            }
+
+            addTextLine("Press 'c' to change launch shape");
+
+            if (getStepCount()%60 == 0)
+            {
+                launch();
+            }
+        }
+
+
+        public override void keyPressed(char argKeyChar, int argKeyCode)
+        {
+            switch (argKeyChar)
+            {
+                case 'c':
+                    switchObjects();
+                    break;
+            }
+        }
     }
-    m_poly = new PolygonShape();
-    m_poly.setAsBox(2.0f, 0.1f);
-    m_circle = new CircleShape();
-    m_circle.m_p.setZero();
-    m_circle.m_radius = 0.5f;
-
-    BodyDef bd = new BodyDef();
-    bd.type = BodyType.DYNAMIC;
-    bd.position.set(0.0f, 20.0f);
-
-    m_body = getWorld().createBody(bd);
-    currFixture = m_body.createFixture(m_poly, 1.0f);
-
-    m_angularVelocity = (float) Math.random() * 100 - 50;
-    m_angularVelocity = 33.468121f;
-    m_body.setLinearVelocity(new Vec2(0.0f, -100.0f));
-    m_body.setAngularVelocity(m_angularVelocity);
-
-    TimeOfImpact.toiCalls = 0;
-    TimeOfImpact.toiIters = 0;
-    TimeOfImpact.toiMaxIters = 0;
-    TimeOfImpact.toiRootIters = 0;
-    TimeOfImpact.toiMaxRootIters = 0;
-  }
-
-  public void launch() {
-    m_body.setTransform(new Vec2(0.0f, 20.0f), 0.0f);
-    m_angularVelocity = (float) Math.random() * 100 - 50;
-    m_body.setLinearVelocity(new Vec2(0.0f, -100.0f));
-    m_body.setAngularVelocity(m_angularVelocity);
-  }
-
-  @Override
-  public void step(TestbedSettings settings) {
-    if (nextShape != null) {
-      m_body.destroyFixture(currFixture);
-      currFixture = m_body.createFixture(nextShape, 1f);
-      nextShape = null;
-    }
-    // if (stepCount == 12){
-    // stepCount += 0;
-    // } what is this?
-
-    super.step(settings);
-
-    if (Distance.GJK_CALLS > 0) {
-      addTextLine(String.format("gjk calls = %d, ave gjk iters = %3.1f, max gjk iters = %d",
-          Distance.GJK_CALLS, Distance.GJK_ITERS * 1. / Distance.GJK_CALLS, Distance.GJK_MAX_ITERS));
-    }
-
-    if (TimeOfImpact.toiCalls > 0) {
-      int toiCalls = TimeOfImpact.toiCalls;
-      int toiIters = TimeOfImpact.toiIters;
-      int toiMaxIters = TimeOfImpact.toiMaxIters;
-      int toiRootIters = TimeOfImpact.toiRootIters;
-      int toiMaxRootIters = TimeOfImpact.toiMaxRootIters;
-      addTextLine(String.format("toi calls = %d, ave toi iters = %3.1f, max toi iters = %d",
-          toiCalls, toiIters * 1. / toiCalls, toiMaxIters));
-
-      addTextLine(String.format("ave toi root iters = %3.1f, max toi root iters = %d", toiRootIters
-          * 1. / toiCalls, toiMaxRootIters));
-    }
-
-    addTextLine("Press 'c' to change launch shape");
-
-    if (getStepCount() % 60 == 0) {
-      launch();
-    }
-  }
-
-  @Override
-  public void keyPressed(char argKeyChar, int argKeyCode) {
-    switch (argKeyChar) {
-      case 'c':
-        switchObjects();
-        break;
-    }
-  }
 }

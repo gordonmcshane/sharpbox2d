@@ -24,23 +24,26 @@
 /**
  * Created at 2:12:15 PM Jul 17, 2010
  */
-package org.jbox2d.testbed.framework;
+using SharpBox2D.Common;
+using SharpBox2D.Dynamics;
 
-import org.jbox2d.collision.Collision.PointState;
-import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Fixture;
+namespace SharpBox2D.TestBed.Framework
+{
 
 /**
  * Contact point for {@link TestbedTest}.
  * @author Daniel Murphy
  */
-public class ContactPoint {
-	public Fixture fixtureA;
-	public Fixture fixtureB;
-	public final Vec2 normal = new Vec2();
-	public final Vec2 position = new Vec2();
-	public PointState state;
-	public float normalImpulse;
-	public float tangentImpulse;
-	public float separation;
+
+    public class ContactPoint
+    {
+        public Fixture fixtureA;
+        public Fixture fixtureB;
+        public Vec2 normal = new Vec2();
+        public Vec2 position = new Vec2();
+        public Collision.Collision.PointState state;
+        public float normalImpulse;
+        public float tangentImpulse;
+        public float separation;
+    }
 }

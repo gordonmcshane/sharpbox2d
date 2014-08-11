@@ -156,9 +156,11 @@ namespace SharpBox2D.Dynamics.Joints
 
                 Vec2 pC = m_localAnchorC;
                 Rot.mulToOutUnsafe(xfA.q, m_localAnchorA, ref temp);
-                temp.addLocal(xfA.p).subLocal(xfC.p);
+                temp.addLocal(xfA.p);
+                temp.subLocal(xfC.p);
                 Rot.mulTransUnsafe(xfC.q, temp, ref pA);
-                coordinateA = Vec2.dot(pA.subLocal(pC), m_localAxisC);
+                pA.subLocal(pC);
+                coordinateA = Vec2.dot(pA, m_localAxisC);
                 pool.pushVec2(2);
             }
 
@@ -193,9 +195,11 @@ namespace SharpBox2D.Dynamics.Joints
 
                 Vec2 pD = m_localAnchorD;
                 Rot.mulToOutUnsafe(xfB.q, m_localAnchorB, ref temp);
-                temp.addLocal(xfB.p).subLocal(xfD.p);
+                temp.addLocal(xfB.p);
+                temp.subLocal(xfD.p);
                 Rot.mulTransUnsafe(xfD.q, temp, ref pB);
-                coordinateB = Vec2.dot(pB.subLocal(pD), m_localAxisD);
+                pB.subLocal(pD);
+                coordinateB = Vec2.dot(pB, m_localAxisD);
                 pool.pushVec2(2);
             }
 
@@ -218,7 +222,8 @@ namespace SharpBox2D.Dynamics.Joints
 
         public override void getReactionForce(float inv_dt, ref Vec2 argOut)
         {
-            argOut.set(m_JvAC).mulLocal(m_impulse);
+            argOut.set(m_JvAC);
+            argOut.mulLocal(m_impulse);
             argOut.mulLocal(inv_dt);
         }
 
@@ -299,8 +304,12 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 rC = pool.popVec2();
                 Vec2 rA = pool.popVec2();
                 Rot.mulToOutUnsafe(qC, m_localAxisC, ref m_JvAC);
-                Rot.mulToOutUnsafe(qC, temp.set(m_localAnchorC).subLocal(m_lcC), ref rC);
-                Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_lcA), ref rA);
+                temp.set(m_localAnchorC);
+                temp.subLocal(m_lcC);
+                Rot.mulToOutUnsafe(qC, temp, ref rC);
+                temp.set(m_localAnchorA);
+                temp.subLocal(m_lcA);
+                Rot.mulToOutUnsafe(qA,temp, ref rA);
                 m_JwC = Vec2.cross(rC, m_JvAC);
                 m_JwA = Vec2.cross(rA, m_JvAC);
                 m_mass += m_mC + m_mA + m_iC*m_JwC*m_JwC + m_iA*m_JwA*m_JwA;
@@ -320,9 +329,14 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 rD = pool.popVec2();
                 Vec2 rB = pool.popVec2();
                 Rot.mulToOutUnsafe(qD, m_localAxisD, ref u);
-                Rot.mulToOutUnsafe(qD, temp.set(m_localAnchorD).subLocal(m_lcD), ref rD);
-                Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_lcB), ref rB);
-                m_JvBD.set(u).mulLocal(m_ratio);
+                temp.set(m_localAnchorD);
+                temp.subLocal(m_lcD);
+                Rot.mulToOutUnsafe(qD, temp , ref rD);
+                temp.set(m_localAnchorB);
+                temp.subLocal(m_lcB);
+                Rot.mulToOutUnsafe(qB, temp, ref rB);
+                m_JvBD.set(u);
+                m_JvBD.mulLocal(m_ratio);
                 m_JwD = m_ratio*Vec2.cross(rD, u);
                 m_JwB = m_ratio*Vec2.cross(rB, u);
                 m_mass += m_ratio*m_ratio*(m_mD + m_mB) + m_iD*m_JwD*m_JwD + m_iB*m_JwB*m_JwB;
@@ -380,8 +394,12 @@ namespace SharpBox2D.Dynamics.Joints
 
             Vec2 temp1 = pool.popVec2();
             Vec2 temp2 = pool.popVec2();
+            temp1.set(vA);
+            temp1.subLocal(vC);
+            temp2.set(vB);
+            temp2.subLocal(vD);
             float Cdot =
-                Vec2.dot(m_JvAC, temp1.set(vA).subLocal(vC)) + Vec2.dot(m_JvBD, temp2.set(vB).subLocal(vD));
+                Vec2.dot(m_JvAC, temp1) + Vec2.dot(m_JvBD, temp2);
             Cdot += (m_JwA*wA - m_JwC*wC) + (m_JwB*wB - m_JwD*wD);
             pool.pushVec2(2);
 
@@ -468,15 +486,24 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 pC = pool.popVec2();
                 Vec2 pA = pool.popVec2();
                 Rot.mulToOutUnsafe(qC, m_localAxisC, ref JvAC);
-                Rot.mulToOutUnsafe(qC, temp.set(m_localAnchorC).subLocal(m_lcC), ref rC);
-                Rot.mulToOutUnsafe(qA, temp.set(m_localAnchorA).subLocal(m_lcA), ref rA);
+                temp.set(m_localAnchorC);
+                temp.subLocal(m_lcC);
+                Rot.mulToOutUnsafe(qC, temp, ref rC);
+                temp.set(m_localAnchorA);
+                temp.subLocal(m_lcA);
+                Rot.mulToOutUnsafe(qA, temp, ref rA);
                 JwC = Vec2.cross(rC, JvAC);
                 JwA = Vec2.cross(rA, JvAC);
                 mass += m_mC + m_mA + m_iC*JwC*JwC + m_iA*JwA*JwA;
 
-                pC.set(m_localAnchorC).subLocal(m_lcC);
-                Rot.mulTransUnsafe(qC, temp.set(rA).addLocal(cA).subLocal(cC), ref pA);
-                coordinateA = Vec2.dot(pA.subLocal(pC), m_localAxisC);
+                pC.set(m_localAnchorC);
+                pC.subLocal(m_lcC);
+                temp.set(rA);
+                temp.addLocal(cA);
+                temp.subLocal(cC);
+                Rot.mulTransUnsafe(qC, temp, ref pA);
+                pA.subLocal(pC);
+                coordinateA = Vec2.dot(pA, m_localAxisC);
                 pool.pushVec2(4);
             }
 
@@ -497,16 +524,27 @@ namespace SharpBox2D.Dynamics.Joints
                 Vec2 pD = pool.popVec2();
                 Vec2 pB = pool.popVec2();
                 Rot.mulToOutUnsafe(qD, m_localAxisD, ref u);
-                Rot.mulToOutUnsafe(qD, temp.set(m_localAnchorD).subLocal(m_lcD), ref rD);
-                Rot.mulToOutUnsafe(qB, temp.set(m_localAnchorB).subLocal(m_lcB), ref rB);
-                JvBD.set(u).mulLocal(m_ratio);
+                
+                temp.set(m_localAnchorD);
+                temp.subLocal(m_lcD);
+                Rot.mulToOutUnsafe(qD, temp, ref rD);
+                
+                temp.set(m_localAnchorB);
+                temp.subLocal(m_lcB);
+                Rot.mulToOutUnsafe(qB, temp, ref rB);
+                JvBD.set(u);
+                JvBD.mulLocal(m_ratio);
                 JwD = Vec2.cross(rD, u);
                 JwB = Vec2.cross(rB, u);
                 mass += m_ratio*m_ratio*(m_mD + m_mB) + m_iD*JwD*JwD + m_iB*JwB*JwB;
 
-                pD.set(m_localAnchorD).subLocal(m_lcD);
-                Rot.mulTransUnsafe(qD, temp.set(rB).addLocal(cB).subLocal(cD), ref pB);
-                coordinateB = Vec2.dot(pB.subLocal(pD), m_localAxisD);
+                pD.set(m_localAnchorD);
+                pD.subLocal(m_lcD);
+                temp.set(rB);
+                temp.addLocal(cB);
+                Rot.mulTransUnsafe(qD, temp, ref pB);
+                pB.subLocal(pD);
+                coordinateB = Vec2.dot(pB, m_localAxisD);
                 pool.pushVec2(5);
             }
 
