@@ -31,7 +31,7 @@ namespace SharpBox2D.Common
  * A 2D column vector
  */
 
-    public struct Vec2 : IEquatable<Vec2>
+    public class Vec2 : IEquatable<Vec2>
     {
         public float x, y;
 
@@ -39,6 +39,12 @@ namespace SharpBox2D.Common
         {
             this.x = x;
             this.y = y;
+        }
+        
+        public Vec2()
+        {
+            this.x = 0;
+            this.y = 0;
         }
 
         public Vec2(Vec2 toCopy) : this(toCopy.x, toCopy.y)
@@ -316,11 +322,21 @@ namespace SharpBox2D.Common
 
         public static bool operator ==(Vec2 left, Vec2 right)
         {
+            if (ReferenceEquals(null, left))
+                return false;
+            if (ReferenceEquals(null, right))
+                return false;
+            
             return left.Equals(right);
         }
 
         public static bool operator !=(Vec2 left, Vec2 right)
         {
+            if (ReferenceEquals(null, left))
+                return false;
+            if (ReferenceEquals(null, right))
+                return false;
+            
             return !left.Equals(right);
         }
 

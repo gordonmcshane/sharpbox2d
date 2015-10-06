@@ -10,7 +10,7 @@ namespace SharpBox2D.Particle
    * chained by logical sums, for example: pd.flags = ParticleType.b2_elasticParticle |
    * ParticleType.b2_viscousParticle.
    */
-        internal int flags;
+        public int flags;
 
         /** The world position of the particle. */
         public Vec2 position = new Vec2();

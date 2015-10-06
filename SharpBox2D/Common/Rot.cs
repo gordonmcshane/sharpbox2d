@@ -33,7 +33,7 @@ using System.Diagnostics;
 
 namespace SharpBox2D.Common
 {
-    public struct Rot : IEquatable<Rot>
+    public class Rot : IEquatable<Rot>
     {
         public float s;
         public float c; // sin and cos
@@ -41,6 +41,11 @@ namespace SharpBox2D.Common
         public Rot(float angle) : this()
         {
             set(angle);
+        }
+        
+        public Rot()
+        {
+            set(0);
         }
 
         public float getSin()

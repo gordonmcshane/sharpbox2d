@@ -31,7 +31,7 @@ namespace SharpBox2D.Common
 /**
  * A 2-by-2 matrix. Stored in column-major order.
  */
-    public struct Mat22 : IEquatable<Mat22>
+    public class Mat22 : IEquatable<Mat22>
     {
         public Vec2 ex, ey;
 
@@ -51,6 +51,12 @@ namespace SharpBox2D.Common
    * @param c1 Column 1 of matrix
    * @param c2 Column 2 of matrix
    */
+        
+        public Mat22()
+        {
+            ex = new Vec2(1, 0);
+            ey = new Vec2(0, 1);
+        }
 
         public Mat22(Vec2 c1, Vec2 c2)
         {
@@ -308,10 +314,22 @@ namespace SharpBox2D.Common
 
         public void mulLocal(Mat22 R)
         {
-            mulToOut(R, ref this);
+            mulToOut(R, this);
         }
 
         public void mulToOut(Mat22 R, ref Mat22 m)
+        {
+            float tempy1 = this.ex.y*R.ex.x + this.ey.y*R.ex.y;
+            float tempx1 = this.ex.x*R.ex.x + this.ey.x*R.ex.y;
+            m.ex.x = tempx1;
+            m.ex.y = tempy1;
+            float tempy2 = this.ex.y*R.ey.x + this.ey.y*R.ey.y;
+            float tempx2 = this.ex.x*R.ey.x + this.ey.x*R.ey.y;
+            m.ey.x = tempx2;
+            m.ey.y = tempy2;
+        }
+
+        public void mulToOut(Mat22 R, Mat22 m)
         {
             float tempy1 = this.ex.y*R.ex.x + this.ey.y*R.ex.y;
             float tempx1 = this.ex.x*R.ex.x + this.ey.x*R.ex.y;
@@ -360,7 +378,7 @@ namespace SharpBox2D.Common
 
         public void mulTransLocal(Mat22 B)
         {
-            mulTransToOut(B, ref this);
+            mulTransToOut(B, this);
         }
 
         public void mulTransToOut(Mat22 B, ref Mat22 m)
@@ -379,6 +397,22 @@ namespace SharpBox2D.Common
             m.ey.y = y2;
         }
 
+        public void mulTransToOut(Mat22 B, Mat22 m)
+        {
+            /*
+     * ref.ex.x = Vec2.dot(this.ex, B.ex); ref.ex.y = Vec2.dot(this.ey, B.ex); ref.ey.x =
+     * Vec2.dot(this.ex, B.ey); ref.ey.y = Vec2.dot(this.ey, B.ey);
+     */
+            float x1 = this.ex.x*B.ex.x + this.ex.y*B.ex.y;
+            float y1 = this.ey.x*B.ex.x + this.ey.y*B.ex.y;
+            float x2 = this.ex.x*B.ey.x + this.ex.y*B.ey.y;
+            float y2 = this.ey.x*B.ey.x + this.ey.y*B.ey.y;
+            m.ex.x = x1;
+            m.ey.x = x2;
+            m.ex.y = y1;
+            m.ey.y = y2;
+        }
+         
         public void mulTransToOutUnsafe(Mat22 B, ref Mat22 m)
         {
             Debug.Assert(B != m);
