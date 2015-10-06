@@ -35,7 +35,7 @@ namespace SharpBox2D.Common
  * orientation of rigid frames.
  */
 
-    public struct Transform : IEquatable<Transform>
+    public class Transform : IEquatable<Transform>
     {
         /** The translation caused by the transform */
         public Vec2 p;
@@ -57,6 +57,12 @@ namespace SharpBox2D.Common
         {
             p = _position.clone();
             q = _R.clone();
+        }
+        
+        public Transform()
+        {
+            p = new Vec2();
+            q = new Rot();
         }
 
         /** Set this to equal another transform. */

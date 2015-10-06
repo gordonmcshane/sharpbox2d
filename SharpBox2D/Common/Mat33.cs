@@ -33,7 +33,7 @@ namespace SharpBox2D.Common
  * @author Daniel Murphy
  */
 
-    public struct Mat33
+    public class Mat33
     {
         public static readonly Mat33 IDENTITY = new Mat33(new Vec3(1, 0, 0), new Vec3(0, 1, 0), new Vec3(0,
             0, 1));
@@ -53,6 +53,13 @@ namespace SharpBox2D.Common
             ex = argCol1.clone();
             ey = argCol2.clone();
             ez = argCol3.clone();
+        }
+        
+        public Mat33()
+        {
+            ex = IDENTITY.ex.clone();
+            ey = IDENTITY.ex.clone();
+            ez = IDENTITY.ex.clone();
         }
 
         public void setZero()

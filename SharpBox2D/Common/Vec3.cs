@@ -32,7 +32,7 @@ namespace SharpBox2D.Common
  * @author Daniel Murphy
  */
 
-    public struct Vec3 : IEquatable<Vec3>
+    public class Vec3 : IEquatable<Vec3>
     {
         public float x, y, z;
 
@@ -41,6 +41,13 @@ namespace SharpBox2D.Common
             x = argX;
             y = argY;
             z = argZ;
+        }
+        
+        public Vec3()
+        {
+            x = 0;
+            y = 0;
+            z = 0;
         }
 
         public Vec3(Vec3 copy)
@@ -57,7 +64,7 @@ namespace SharpBox2D.Common
             z = vec.z;
             return this;
         }
-
+        
         public Vec3 set(float argX, float argY, float argZ)
         {
             x = argX;
